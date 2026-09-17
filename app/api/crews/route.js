@@ -61,9 +61,10 @@ export async function PATCH(request) {
       .eq('id', id)
       .eq('company_id', companyId)
       .select()
-      .single()
+      .maybeSingle()
 
     if (error) throw error
+    if (!data) return NextResponse.json({ error: 'Crew not found' }, { status: 404 })
     return NextResponse.json({ crew: data })
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 })
@@ -77,6 +78,7 @@ export async function DELETE(request) {
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { id } = await request.json()
+    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
     const { error } = await supabaseAdmin
       .from('crews')

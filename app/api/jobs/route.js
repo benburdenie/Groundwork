@@ -93,14 +93,22 @@ export async function PATCH(request) {
     const { id, equipment_ids, ...fields } = body
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
+    const { data: existing, error: existError } = await supabaseAdmin
+      .from('jobs')
+      .select('start_date, end_date')
+      .eq('id', id)
+      .eq('company_id', companyId)
+      .maybeSingle()
+    if (existError) throw existError
+    if (!existing) return NextResponse.json({ error: 'Job not found' }, { status: 404 })
+
     const update = { ...fields }
     if ('start_date' in update) update.start_date = update.start_date || null
     if ('end_date' in update) update.end_date = update.end_date || null
     if ('crew_id' in update) update.crew_id = update.crew_id || null
     if ('start_date' in update || 'end_date' in update) {
-      const { data: existing } = await supabaseAdmin.from('jobs').select('start_date, end_date').eq('id', id).single()
-      const start_date = 'start_date' in update ? update.start_date : existing?.start_date
-      const end_date = 'end_date' in update ? update.end_date : existing?.end_date
+      const start_date = 'start_date' in update ? update.start_date : existing.start_date
+      const end_date = 'end_date' in update ? update.end_date : existing.end_date
       update.duration_days = computeDuration(start_date, end_date)
     }
 
@@ -121,6 +129,7 @@ export async function PATCH(request) {
       .from('jobs')
       .select(JOB_SELECT)
       .eq('id', id)
+      .eq('company_id', companyId)
       .single()
     if (fetchError) throw fetchError
 
@@ -137,6 +146,7 @@ export async function DELETE(request) {
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { id } = await request.json()
+    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
     const { error } = await supabaseAdmin
       .from('jobs')
