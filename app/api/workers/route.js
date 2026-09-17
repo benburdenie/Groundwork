@@ -1,76 +1,79 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin, getCompanyId } from '../../../lib/serverAuth'
 
-// GET — fetch all crews for this company
+// GET — fetch all workers for this company
 export async function GET(request) {
   try {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { data, error } = await supabaseAdmin
-      .from('crews')
-      .select('*, crew_availability(*), perm_equipment_assignments(equipment_id, equipment(id, name, category))')
+      .from('workers')
+      .select('*, crew:crews(id, name, color)')
       .eq('company_id', companyId)
       .eq('is_active', true)
       .order('name')
 
     if (error) throw error
-    return NextResponse.json({ crews: data })
+    return NextResponse.json({ workers: data })
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
 
-// POST — create a new crew
+// POST — create a new worker
 export async function POST(request) {
   try {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await request.json()
-    const { name, foreman_name, color, notes } = body
+    const { name, role, phone, email, crew_id, notes } = body
 
     if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
 
     const { data, error } = await supabaseAdmin
-      .from('crews')
-      .insert({ company_id: companyId, name, foreman_name, color: color || '#F5C800', notes })
-      .select()
+      .from('workers')
+      .insert({
+        company_id: companyId, name, role: role || 'Labourer', phone, email,
+        crew_id: crew_id || null, notes,
+      })
+      .select('*, crew:crews(id, name, color)')
       .single()
 
     if (error) throw error
-    return NextResponse.json({ crew: data })
+    return NextResponse.json({ worker: data })
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
 
-// PATCH — update an existing crew
+// PATCH — update an existing worker
 export async function PATCH(request) {
   try {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id, name, foreman_name, color, notes } = await request.json()
+    const { id, name, role, phone, email, crew_id, notes } = await request.json()
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
     if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
 
     const { data, error } = await supabaseAdmin
-      .from('crews')
-      .update({ name, foreman_name, color, notes })
+      .from('workers')
+      .update({ name, role, phone, email, crew_id: crew_id || null, notes })
       .eq('id', id)
       .eq('company_id', companyId)
-      .select()
+      .select('*, crew:crews(id, name, color)')
       .single()
 
     if (error) throw error
-    return NextResponse.json({ crew: data })
+    return NextResponse.json({ worker: data })
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
 
-// DELETE — soft delete a crew
+// DELETE — soft delete a worker
 export async function DELETE(request) {
   try {
     const companyId = await getCompanyId(request)
@@ -79,7 +82,7 @@ export async function DELETE(request) {
     const { id } = await request.json()
 
     const { error } = await supabaseAdmin
-      .from('crews')
+      .from('workers')
       .update({ is_active: false })
       .eq('id', id)
       .eq('company_id', companyId)

@@ -6,14 +6,9 @@ export async function POST(request) {
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
 
-    console.log('URL:', url)
-    console.log('Service key exists:', !!serviceKey)
-    console.log('Service key starts with:', serviceKey?.slice(0, 20))
-
     const supabaseAdmin = createClient(url, serviceKey)
 
     const { userId, companyName, yourName, email } = await request.json()
-    console.log('Creating company for user:', userId)
 
     const slug = companyName
       .toLowerCase()
@@ -25,8 +20,6 @@ export async function POST(request) {
       .insert({ name: companyName, slug, owner_id: userId })
       .select()
       .single()
-
-    console.log('Company result:', company, 'Error:', companyError)
 
     if (companyError) throw companyError
 
@@ -44,7 +37,7 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, companyId: company.id })
   } catch (err) {
-    console.error('Signup API error:', err)
+    console.error('Signup API error:', err.message)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

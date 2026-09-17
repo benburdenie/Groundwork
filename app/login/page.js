@@ -10,6 +10,12 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  const [showForgot, setShowForgot] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetLoading, setResetLoading] = useState(false)
+  const [resetError, setResetError] = useState(null)
+  const [resetSent, setResetSent] = useState(false)
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
@@ -29,6 +35,30 @@ export default function Login() {
       setLoading(false)
     } else {
       router.push('/dashboard')
+    }
+  }
+
+  const openForgotPassword = () => {
+    setResetEmail(formData.email)
+    setResetError(null)
+    setResetSent(false)
+    setShowForgot(true)
+  }
+
+  const handleResetSubmit = async (e) => {
+    e.preventDefault()
+    setResetLoading(true)
+    setResetError(null)
+
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+
+    setResetLoading(false)
+    if (error) {
+      setResetError(error.message)
+    } else {
+      setResetSent(true)
     }
   }
 
@@ -63,6 +93,9 @@ export default function Login() {
               onChange={handleChange}
               required
             />
+            <button type="button" onClick={openForgotPassword} style={styles.forgotLink}>
+              Forgot password?
+            </button>
           </div>
 
           {error && <div style={styles.error}>{error}</div>}
@@ -72,8 +105,40 @@ export default function Login() {
           </button>
         </form>
 
+        {showForgot && (
+          <div style={styles.forgotPanel}>
+            {resetSent ? (
+              <p style={styles.resetSent}>
+                If an account exists for <strong>{resetEmail}</strong>, we&apos;ve sent a password reset link to it.
+              </p>
+            ) : (
+              <form onSubmit={handleResetSubmit}>
+                <label style={styles.label}>Reset your password</label>
+                <input
+                  style={styles.input}
+                  type="email"
+                  placeholder="you@company.com"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                />
+                {resetError && <div style={styles.error}>{resetError}</div>}
+                <button style={styles.resetButton} type="submit" disabled={resetLoading}>
+                  {resetLoading ? 'Sending...' : 'Send Reset Link'}
+                </button>
+              </form>
+            )}
+          </div>
+        )}
+
         <p style={styles.footer}>
           No account yet? <a href="/signup" style={styles.link}>Create one</a>
+        </p>
+
+        <p style={styles.legal}>
+          <a href="/privacy" style={styles.link}>Privacy Policy</a>
+          {' · '}
+          <a href="/terms" style={styles.link}>Terms of Service</a>
         </p>
       </div>
     </div>
@@ -155,5 +220,38 @@ const styles = {
     fontFamily: 'monospace',
   },
   footer: { color: '#555', fontSize: '0.8rem', textAlign: 'center', marginTop: '1.5rem' },
+  legal: { color: '#555', fontSize: '0.75rem', textAlign: 'center', marginTop: '0.75rem' },
   link: { color: '#F5C800', textDecoration: 'none' },
+  forgotLink: {
+    background: 'none',
+    border: 'none',
+    color: '#888',
+    fontSize: '0.78rem',
+    fontFamily: "'Barlow', sans-serif",
+    cursor: 'pointer',
+    padding: 0,
+    marginTop: '0.5rem',
+    textDecoration: 'underline',
+  },
+  forgotPanel: {
+    background: '#111',
+    border: '1px solid #2a2a2a',
+    padding: '1rem 1.1rem',
+    marginTop: '1.25rem',
+  },
+  resetSent: { color: '#bbb', fontSize: '0.85rem', lineHeight: 1.5, margin: 0 },
+  resetButton: {
+    width: '100%',
+    background: 'transparent',
+    color: '#F5C800',
+    border: '1px solid #F5C800',
+    padding: '0.6rem',
+    fontSize: '0.8rem',
+    fontWeight: 700,
+    letterSpacing: '2px',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    marginTop: '0.75rem',
+    fontFamily: 'monospace',
+  },
 }

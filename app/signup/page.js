@@ -126,6 +126,12 @@ export default function SignUp() {
           <button style={styles.button} type="submit" disabled={loading}>
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
+
+          <p style={styles.legal}>
+            By creating an account you agree to our{' '}
+            <a href="/terms" style={styles.link}>Terms of Service</a> and{' '}
+            <a href="/privacy" style={styles.link}>Privacy Policy</a>.
+          </p>
         </form>
 
         <p style={styles.footer}>
@@ -224,6 +230,14 @@ const styles = {
     fontSize: '0.8rem',
     textAlign: 'center',
     marginTop: '1.5rem',
+  },
+  legal: {
+    color: '#555',
+    fontSize: '0.75rem',
+    textAlign: 'center',
+    lineHeight: 1.5,
+    marginTop: '0.9rem',
+    marginBottom: 0,
   },
   link: { color: '#F5C800', textDecoration: 'none' },
 }
