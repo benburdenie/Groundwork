@@ -58,8 +58,9 @@ export default function SignUp() {
       <div style={styles.container}>
         <div style={styles.card}>
           <h1 style={styles.logo}>Ground<span style={styles.accent}>Work</span></h1>
-          <h2 style={styles.heading}>Check your email</h2>
-          <p style={styles.sub}>We sent a confirmation link to <strong>{formData.email}</strong>. Click it to activate your account.</p>
+          <h2 style={styles.heading}>Account created</h2>
+          <p style={styles.sub}>Your account is ready. Sign in to get started.</p>
+          <a href="/login" style={{ ...styles.button, display: 'block', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}>Sign In</a>
         </div>
       </div>
     )
