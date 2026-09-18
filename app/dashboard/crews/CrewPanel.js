@@ -148,7 +148,7 @@ const styles = {
   closeBtn: { background: 'transparent', border: 'none', color: COLORS.textMuted, cursor: 'pointer', padding: '4px', borderRadius: RADIUS },
   meta: { fontFamily: FONT_MONO, fontSize: '0.78rem', color: COLORS.textSecondary, marginTop: '0.3rem' },
   section: { marginTop: '20px', paddingTop: '16px', borderTop: `1px solid ${COLORS.borderSubtle}` },
-  sectionTitle: { fontFamily: FONT_MONO, fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.primary, marginBottom: '0.5rem' },
+  sectionTitle: { fontFamily: FONT_MONO, fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.textMuted, marginBottom: '0.5rem' },
   subLine: { fontSize: '0.82rem', color: COLORS.textPrimary },
   dim: { color: COLORS.textMuted, fontSize: '0.78rem' },
   empty: { color: COLORS.textMuted, fontSize: '0.8rem', margin: 0 },

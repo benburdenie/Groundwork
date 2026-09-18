@@ -139,7 +139,7 @@ const styles = {
     maxHeight: '360px', overflowY: 'auto', zIndex: 600, boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
   },
   empty: { padding: '0.75rem', fontSize: '0.8rem', color: COLORS.textMuted },
-  groupLabel: { fontFamily: FONT_MONO, fontSize: '0.58rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.primary, padding: '10px 14px 4px' },
+  groupLabel: { fontFamily: FONT_MONO, fontSize: '0.58rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.textMuted, padding: '10px 14px 4px' },
   item: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'transparent', border: 'none', textAlign: 'left', padding: '8px 14px', cursor: 'pointer', color: COLORS.textPrimary, fontSize: '0.82rem', borderRadius: '6px' },
   itemActive: { background: COLORS.surfaceRaised },
   itemLabel: { fontWeight: 500 },

@@ -62,7 +62,7 @@ export default function SignUp() {
           <h1 style={styles.logo}>Ground<span style={styles.accent}>Work</span></h1>
           <h2 style={styles.heading}>Account created</h2>
           <p style={styles.sub}>Your account is ready. Sign in to get started.</p>
-          <a href="/login" className="btn btn-primary" style={styles.fullWidthLink}>Sign in</a>
+          <a href="/login" className="btn btn-accent" style={styles.fullWidthLink}>Sign in</a>
         </div>
       </div>
     )
@@ -126,7 +126,7 @@ export default function SignUp() {
 
           {error && <div style={styles.error}>{error}</div>}
 
-          <button className="btn btn-primary" style={styles.fullWidthBtn} type="submit" disabled={loading}>
+          <button className="btn btn-accent" style={styles.fullWidthBtn} type="submit" disabled={loading}>
             {loading && <Spinner />}
             {loading ? 'Creating account…' : 'Create account'}
           </button>

@@ -133,7 +133,7 @@ const styles = {
   title: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.6rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '20px' },
   summary: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' },
   summaryItem: { padding: '16px', textAlign: 'center' },
-  summaryValue: { fontFamily: FONT_MONO, fontSize: '1.8rem', fontWeight: 800, color: COLORS.primary },
+  summaryValue: { fontFamily: FONT_MONO, fontSize: '1.8rem', fontWeight: 800, color: COLORS.textPrimary },
   summaryLabel: { fontFamily: FONT_MONO, fontSize: '0.6rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.textMuted, marginTop: '0.3rem' },
   jobs: { display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' },
   empty: { color: COLORS.textMuted },

@@ -79,7 +79,7 @@ export default function MonthView({ cursor, jobs, availability, bookings, equipm
                   onClick={(e) => { e.stopPropagation(); onJobClick(job) }}
                   style={{
                     ...styles.pill,
-                    background: `${crewColor(job.crew)}26`,
+                    background: COLORS.borderSubtle,
                     borderLeft: `3px solid ${crewColor(job.crew)}`,
                     opacity: draggingJobId === job.id ? 0.4 : 1,
                   }}
@@ -107,7 +107,7 @@ const styles = {
   dowHeader: { fontFamily: FONT_MONO, fontSize: '0.6rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.textMuted, padding: '10px', borderRight: `1px solid ${COLORS.borderSubtle}`, borderBottom: `1px solid ${COLORS.borderSubtle}`, background: COLORS.sidebarBg },
   cell: { minHeight: '110px', padding: '8px', borderRight: `1px solid ${COLORS.borderSubtle}`, borderBottom: `1px solid ${COLORS.borderSubtle}`, background: COLORS.bg, display: 'flex', flexDirection: 'column', gap: '4px', cursor: 'pointer', transition: 'background-color 150ms ease' },
   cellTop: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  cellToday: { background: COLORS.primarySubtle },
+  cellToday: { background: COLORS.primaryMuted },
   cellDim: { background: 'rgba(255,255,255,0.015)' },
   cellWeekend: { background: COLORS.sidebarBg },
   cellDate: { fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: COLORS.textSecondary },

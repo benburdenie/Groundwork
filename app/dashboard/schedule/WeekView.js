@@ -61,7 +61,7 @@ export default function WeekView({ jobs, availability, bookings, equipment, work
                   onClick={(e) => { e.stopPropagation(); onJobClick(job) }}
                   style={{
                     ...styles.card,
-                    background: `${crewColor(job.crew)}1f`,
+                    background: COLORS.borderSubtle,
                     borderLeft: `3px solid ${crewColor(job.crew)}`,
                     opacity: draggingJobId === job.id ? 0.4 : 1,
                   }}
@@ -87,7 +87,7 @@ export default function WeekView({ jobs, availability, bookings, equipment, work
 const styles = {
   grid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px', background: COLORS.borderSubtle, minHeight: '60vh', borderRadius: '8px', overflow: 'hidden' },
   col: { background: COLORS.bg, padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' },
-  colToday: { background: COLORS.primarySubtle },
+  colToday: { background: COLORS.primaryMuted },
   colWeekend: { background: COLORS.sidebarBg },
   colHeader: { display: 'flex', alignItems: 'baseline', gap: '8px', borderBottom: `1px solid ${COLORS.borderSubtle}`, paddingBottom: '8px' },
   dowLabel: { fontFamily: FONT_MONO, fontSize: '0.62rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: COLORS.textMuted },

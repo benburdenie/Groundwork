@@ -416,7 +416,7 @@ const styles = {
   toolbarRight: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' },
   viewToggle: { display: 'flex', border: `1px solid ${COLORS.border}`, borderRadius: RADIUS, overflow: 'hidden' },
   viewBtn: { background: 'transparent', border: 'none', color: COLORS.textSecondary, fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px', padding: '8px 14px', cursor: 'pointer', transition: 'background-color 150ms ease, color 150ms ease' },
-  viewBtnActive: { background: COLORS.primary, color: COLORS.bg },
+  viewBtnActive: { background: COLORS.border, color: COLORS.textPrimary },
   monthToolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '0.75rem' },
   nav: { display: 'flex', alignItems: 'center', gap: '8px' },
   monthLabel: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.4rem', letterSpacing: '1px', textTransform: 'uppercase', color: COLORS.textPrimary },

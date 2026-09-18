@@ -22,7 +22,7 @@ export default function Home() {
           built for landscaping companies that are done wrangling spreadsheets.
         </p>
         <div style={styles.heroActions}>
-          <Link href="/signup" className="btn btn-primary" style={styles.heroBtn}>Start free</Link>
+          <Link href="/signup" className="btn btn-accent" style={styles.heroBtn}>Start free</Link>
           <Link href="/login" className="btn btn-secondary" style={styles.heroBtn}>Sign in</Link>
         </div>
 
@@ -63,7 +63,7 @@ const styles = {
     textAlign: 'center' as const, padding: '5rem 1.5rem 3rem', maxWidth: '900px', margin: '0 auto',
   },
   heroTag: {
-    fontFamily: "'Inconsolata', monospace", fontSize: '0.72rem', letterSpacing: '3px', color: COLORS.primary,
+    fontFamily: "'Inconsolata', monospace", fontSize: '0.72rem', letterSpacing: '3px', color: COLORS.yellow,
     marginBottom: '1.25rem',
   },
   heroTitle: { fontFamily: FONT_COND, fontWeight: 700, fontSize: '2.8rem', lineHeight: 1.15, margin: '0 0 1.25rem' },

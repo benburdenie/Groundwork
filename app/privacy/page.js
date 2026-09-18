@@ -137,7 +137,7 @@ const styles = {
   updated: { color: COLORS.textMuted, fontSize: '0.82rem', fontFamily: "'Inconsolata', monospace", margin: '0 0 2.5rem' },
   h2: {
     fontFamily: "'Inconsolata', monospace", fontSize: '0.85rem', letterSpacing: '0.08em', textTransform: 'uppercase',
-    color: COLORS.primary, margin: '2.25rem 0 0.9rem', paddingBottom: '0.6rem', borderBottom: `1px solid ${COLORS.borderSubtle}`,
+    color: COLORS.textPrimary, margin: '2.25rem 0 0.9rem', paddingBottom: '0.6rem', borderBottom: `1px solid ${COLORS.borderSubtle}`,
   },
   p: { color: COLORS.textSecondary, fontSize: '0.95rem', lineHeight: 1.7, margin: '0 0 1rem' },
   ul: { margin: '0 0 1rem', paddingLeft: '1.25rem' },

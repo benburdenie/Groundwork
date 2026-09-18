@@ -122,7 +122,7 @@ const styles = {
   link: { color: COLORS.primary, textDecoration: 'none' },
   dot: { width: '8px', height: '8px', borderRadius: '50%', display: 'inline-block', flexShrink: 0 },
   section: { marginTop: '20px', paddingTop: '16px', borderTop: `1px solid ${COLORS.borderSubtle}` },
-  sectionTitle: { fontFamily: FONT_MONO, fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.primary, marginBottom: '0.5rem' },
+  sectionTitle: { fontFamily: FONT_MONO, fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.textMuted, marginBottom: '0.5rem' },
   subLine: { fontSize: '0.82rem', color: COLORS.textPrimary, margin: '0.3rem 0', display: 'flex', alignItems: 'center', gap: '0.4rem' },
   dim: { color: COLORS.textMuted, fontSize: '0.78rem' },
   notes: { fontSize: '0.85rem', color: COLORS.textSecondary, margin: 0, fontStyle: 'italic' },

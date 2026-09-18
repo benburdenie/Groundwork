@@ -98,7 +98,7 @@ export default function ResetPassword() {
 
               {error && <div style={styles.error}>{error}</div>}
 
-              <button className="btn btn-primary" style={styles.fullWidthBtn} type="submit" disabled={loading}>
+              <button className="btn btn-accent" style={styles.fullWidthBtn} type="submit" disabled={loading}>
                 {loading && <Spinner />}
                 {loading ? 'Updating…' : 'Update password'}
               </button>

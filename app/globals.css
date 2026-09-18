@@ -10,6 +10,7 @@
   --primary: #22c55e;
   --primary-hover: #16a34a;
   --primary-subtle: #052e16;
+  --primary-muted: #0d2818;
   --yellow: #f5c800;
   --yellow-subtle: #1a1500;
   --danger: #ef4444;
@@ -64,11 +65,21 @@ body {
   padding: 6px 12px;
   font-size: 13px;
 }
+/* Neutral by default — dark fill, green text/border. Reserve .btn-accent
+   (solid green fill) for the single most important action on a page. */
 .btn-primary {
+  background: var(--border-subtle);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-subtle);
+}
+.btn-accent {
   background: var(--primary);
   color: var(--bg);
 }
-.btn-primary:hover:not(:disabled) {
+.btn-accent:hover:not(:disabled) {
   background: var(--primary-hover);
 }
 .btn-secondary {
@@ -161,8 +172,8 @@ textarea.field {
   color: var(--text-primary);
 }
 .nav-item.active {
-  background: var(--primary-subtle);
-  color: var(--primary);
+  background: transparent;
+  color: var(--text-primary);
   border-left-color: var(--primary);
 }
 
