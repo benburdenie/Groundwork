@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { CloudRain, CalendarClock, Printer, Plus } from 'lucide-react'
 import { apiGet, apiPost, apiPatch, apiDelete } from '../../../lib/api'
 import { COLORS, FONT_COND, FONT_MONO, RADIUS, shared } from '../../../lib/theme'
-import { buildWorkScheduleMap, computeEndDate, addWorkDays } from '../../../lib/workdays'
+import { buildWorkScheduleMap, computeEndDate } from '../../../lib/workdays'
 import { useJobsContext } from '../JobsContext'
 import { Skeleton } from '../ui'
 import MonthView from './MonthView'
@@ -134,8 +134,14 @@ function ScheduleContent() {
   }
 
   const handlePanelRainDay = async (job) => {
-    const newEnd = addWorkDays(job.end_date, 1, workSchedule)
-    await apiPatch('/api/jobs', { id: job.id, end_date: newEnd, duration_days: (job.duration_days || 0) + 1 })
+    // Delegate to the same rain-day endpoint the toolbar button uses, so the
+    // date gets recorded in work_schedule and every affected job (not just
+    // this one) shifts consistently.
+    const today = new Date().toISOString().slice(0, 10)
+    const rainDate = job.start_date && job.end_date && job.start_date <= today && today <= job.end_date
+      ? today
+      : job.start_date
+    await apiPost('/api/jobs/rain-day', { date: rainDate })
     await refreshAll()
     setSelectedJob(null)
   }

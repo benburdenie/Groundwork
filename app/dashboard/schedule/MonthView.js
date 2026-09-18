@@ -47,7 +47,7 @@ export default function MonthView({ cursor, jobs, availability, bookings, equipm
               ...styles.cell,
               ...(isToday ? styles.cellToday : {}),
               ...(!inMonth ? styles.cellDim : {}),
-              ...((isWeekend && override !== 'workday') || override === 'holiday' ? styles.cellWeekend : {}),
+              ...((isWeekend && override !== 'workday') || override === 'holiday' || override === 'rain' ? styles.cellWeekend : {}),
             }}
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => onDropOnDate(dateStr)}
@@ -55,7 +55,8 @@ export default function MonthView({ cursor, jobs, availability, bookings, equipm
           >
             <div style={styles.cellTop}>
               <div style={{ ...styles.cellDate, ...(isToday ? styles.cellDateToday : {}) }}>{date.getDate()}</div>
-              {override && <span style={styles.overrideTag}>{override === 'workday' ? 'Work' : 'Off'}</span>}
+              {override === 'rain' && <span style={styles.rainIcon} title="Rain day">🌧</span>}
+              {override && override !== 'rain' && <span style={styles.overrideTag}>{override === 'workday' ? 'Work' : 'Off'}</span>}
             </div>
 
             {blocks.length > 0 && (
@@ -113,6 +114,7 @@ const styles = {
   cellDate: { fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: COLORS.textSecondary },
   cellDateToday: { color: COLORS.primary },
   overrideTag: { fontFamily: FONT_MONO, fontSize: '0.55rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: COLORS.yellow, border: `1px solid ${COLORS.yellow}`, borderRadius: '4px', padding: '0px 4px' },
+  rainIcon: { fontSize: '0.85rem', lineHeight: 1 },
   blockTags: { display: 'flex', flexWrap: 'wrap', gap: '2px' },
   blockTag: { fontFamily: FONT_MONO, fontSize: '0.55rem', letterSpacing: '0.03em', textTransform: 'uppercase', padding: '1px 5px', borderRadius: '4px', whiteSpace: 'nowrap' },
   cellJobs: { display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto', flex: 1 },

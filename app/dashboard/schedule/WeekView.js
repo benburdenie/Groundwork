@@ -27,7 +27,7 @@ export default function WeekView({ jobs, availability, bookings, equipment, work
             style={{
               ...styles.col,
               ...(isToday ? styles.colToday : {}),
-              ...((isWeekend && override !== 'workday') || override === 'holiday' ? styles.colWeekend : {}),
+              ...((isWeekend && override !== 'workday') || override === 'holiday' || override === 'rain' ? styles.colWeekend : {}),
             }}
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => onDropOnDate(dateStr)}
@@ -36,7 +36,8 @@ export default function WeekView({ jobs, availability, bookings, equipment, work
             <div style={styles.colHeader}>
               <div style={styles.dowLabel}>{date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
               <div style={{ ...styles.dateLabel, ...(isToday ? styles.dateLabelToday : {}) }}>{date.getDate()}</div>
-              {override && <span style={styles.overrideTag}>{override === 'workday' ? 'Work' : 'Off'}</span>}
+              {override === 'rain' && <span style={styles.rainIcon} title="Rain day">🌧</span>}
+              {override && override !== 'rain' && <span style={styles.overrideTag}>{override === 'workday' ? 'Work' : 'Off'}</span>}
             </div>
 
             {blocks.length > 0 && (
@@ -94,6 +95,7 @@ const styles = {
   dateLabel: { fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '1.2rem', color: COLORS.textSecondary },
   dateLabelToday: { color: COLORS.primary },
   overrideTag: { fontFamily: FONT_MONO, fontSize: '0.55rem', letterSpacing: '0.05em', color: COLORS.yellow, border: `1px solid ${COLORS.yellow}`, borderRadius: '4px', padding: '0px 4px', marginLeft: 'auto' },
+  rainIcon: { fontSize: '0.95rem', lineHeight: 1, marginLeft: 'auto' },
   blockTags: { display: 'flex', flexDirection: 'column', gap: '2px' },
   blockTag: { fontFamily: FONT_MONO, fontSize: '0.58rem', letterSpacing: '0.03em', textTransform: 'uppercase', padding: '2px 5px', borderRadius: '4px' },
   jobList: { display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, overflowY: 'auto' },
