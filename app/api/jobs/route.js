@@ -1,14 +1,32 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin, getCompanyId } from '../../../lib/serverAuth'
+import { buildWorkScheduleMap, computeEndDate, countWorkDays } from '../../../lib/workdays'
 
 const JOB_SELECT = '*, crew:crews(id, name, color), job_equipment(equipment_id, equipment(id, name, category))'
 
-function computeDuration(start_date, end_date) {
-  if (!start_date || !end_date) return null
-  const start = new Date(start_date)
-  const end = new Date(end_date)
-  const days = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1
-  return days > 0 ? days : null
+async function getWorkSchedule(companyId) {
+  const { data } = await supabaseAdmin.from('work_schedule').select('*').eq('company_id', companyId)
+  return buildWorkScheduleMap(data)
+}
+
+// Duration is stored in WORK days, not calendar days. When the caller supplies
+// duration_days explicitly (the client already reconciled it against dates via
+// lib/workdays.js) it's trusted as-is; otherwise it's derived from whichever of
+// start/end/duration is missing.
+function resolveDatesAndDuration({ start_date, end_date, duration_days }, workSchedule) {
+  start_date = start_date || null
+  end_date = end_date || null
+  let duration = duration_days != null && duration_days !== '' ? parseInt(duration_days, 10) : null
+  if (Number.isNaN(duration)) duration = null
+
+  if (!start_date || !end_date) {
+    if (start_date && duration) end_date = computeEndDate(start_date, duration, workSchedule)
+    else duration = null
+  } else if (!duration) {
+    duration = countWorkDays(start_date, end_date, workSchedule)
+  }
+
+  return { start_date, end_date, duration_days: duration }
 }
 
 async function setJobEquipment(companyId, jobId, equipmentIds) {
@@ -49,18 +67,19 @@ export async function POST(request) {
     const body = await request.json()
     const {
       name, address, city, client_name, client_phone, client_email,
-      start_date, end_date, crew_id, notes, status, equipment_ids,
+      start_date, end_date, duration_days, crew_id, notes, status, equipment_ids,
     } = body
 
     if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
 
-    const duration_days = computeDuration(start_date, end_date)
+    const workSchedule = await getWorkSchedule(companyId)
+    const resolved = resolveDatesAndDuration({ start_date, end_date, duration_days }, workSchedule)
 
     const { data, error } = await supabaseAdmin
       .from('jobs')
       .insert({
         company_id: companyId, name, address, city, client_name, client_phone, client_email,
-        start_date: start_date || null, end_date: end_date || null, duration_days,
+        start_date: resolved.start_date, end_date: resolved.end_date, duration_days: resolved.duration_days,
         crew_id: crew_id || null, notes, status: status || 'notstarted',
       })
       .select()
@@ -90,12 +109,12 @@ export async function PATCH(request) {
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await request.json()
-    const { id, equipment_ids, ...fields } = body
+    const { id, equipment_ids, duration_days, ...fields } = body
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
     const { data: existing, error: existError } = await supabaseAdmin
       .from('jobs')
-      .select('start_date, end_date')
+      .select('start_date, end_date, duration_days')
       .eq('id', id)
       .eq('company_id', companyId)
       .maybeSingle()
@@ -103,13 +122,16 @@ export async function PATCH(request) {
     if (!existing) return NextResponse.json({ error: 'Job not found' }, { status: 404 })
 
     const update = { ...fields }
-    if ('start_date' in update) update.start_date = update.start_date || null
-    if ('end_date' in update) update.end_date = update.end_date || null
     if ('crew_id' in update) update.crew_id = update.crew_id || null
-    if ('start_date' in update || 'end_date' in update) {
-      const start_date = 'start_date' in update ? update.start_date : existing.start_date
-      const end_date = 'end_date' in update ? update.end_date : existing.end_date
-      update.duration_days = computeDuration(start_date, end_date)
+
+    if ('start_date' in update || 'end_date' in update || duration_days !== undefined) {
+      const workSchedule = await getWorkSchedule(companyId)
+      const start_date = 'start_date' in update ? (update.start_date || null) : existing.start_date
+      const end_date = 'end_date' in update ? (update.end_date || null) : existing.end_date
+      const resolved = resolveDatesAndDuration({ start_date, end_date, duration_days }, workSchedule)
+      update.start_date = resolved.start_date
+      update.end_date = resolved.end_date
+      update.duration_days = resolved.duration_days
     }
 
     if (Object.keys(update).length > 0) {

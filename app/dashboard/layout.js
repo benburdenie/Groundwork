@@ -5,14 +5,15 @@ import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import { apiGet } from '../../lib/api'
 import { COLORS, FONT_COND, FONT_MONO, FONT_BODY } from '../../lib/theme'
+import { JobsProvider } from './JobsContext'
+import OverdueBanner from './OverdueBanner'
+import Search from './Search'
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Overview', exact: true },
+  { href: '/dashboard/schedule', label: 'Schedule' },
   { href: '/dashboard/crews', label: 'Crews' },
   { href: '/dashboard/equipment', label: 'Equipment' },
   { href: '/dashboard/workers', label: 'Workers' },
-  { href: '/dashboard/jobs', label: 'Jobs' },
-  { href: '/dashboard/calendar', label: 'Calendar' },
 ]
 
 export default function DashboardLayout({ children }) {
@@ -50,45 +51,50 @@ export default function DashboardLayout({ children }) {
   )
 
   return (
-    <div style={styles.appShell}>
-      <header style={styles.header}>
-        <div style={styles.logo}>
-          <div style={styles.logoBar} />
-          <span style={styles.logoText}>Ground<span style={styles.accent}>Work</span></span>
-        </div>
-        <div style={styles.headerRight}>
-          {company?.name && <span style={styles.companyName}>{company.name}</span>}
-          <span style={styles.userEmail}>{user?.email}</span>
-          <button style={styles.signOut} onClick={handleSignOut}>Sign Out</button>
-        </div>
-      </header>
-
-      <div style={styles.body}>
-        <nav style={styles.sidebar}>
-          <div style={styles.sidebarHeader}>
-            <span style={styles.sidebarTitle}>Navigation</span>
+    <JobsProvider>
+      <div style={styles.appShell}>
+        <header style={styles.header} className="print-hide">
+          <div style={styles.logo}>
+            <div style={styles.logoBar} />
+            <span style={styles.logoText}>Ground<span style={styles.accent}>Work</span></span>
           </div>
-          <div style={styles.sidebarBody}>
-            {NAV_ITEMS.map(item => {
-              const active = item.exact ? pathname === item.href : pathname.startsWith(item.href)
-              return (
-                <button
-                  key={item.href}
-                  onClick={() => router.push(item.href)}
-                  style={{ ...styles.navItem, ...(active ? styles.navItemActive : {}) }}
-                >
-                  {item.label}
-                </button>
-              )
-            })}
+          <Search />
+          <div style={styles.headerRight}>
+            {company?.name && <span style={styles.companyName}>{company.name}</span>}
+            <span style={styles.userEmail}>{user?.email}</span>
+            <button style={styles.signOut} onClick={handleSignOut}>Sign Out</button>
           </div>
-        </nav>
+        </header>
 
-        <main style={styles.main}>
-          {children}
-        </main>
+        <div className="print-hide"><OverdueBanner /></div>
+
+        <div style={styles.body}>
+          <nav style={styles.sidebar} className="print-hide">
+            <div style={styles.sidebarHeader}>
+              <span style={styles.sidebarTitle}>Navigation</span>
+            </div>
+            <div style={styles.sidebarBody}>
+              {NAV_ITEMS.map(item => {
+                const active = pathname.startsWith(item.href)
+                return (
+                  <button
+                    key={item.href}
+                    onClick={() => router.push(item.href)}
+                    style={{ ...styles.navItem, ...(active ? styles.navItemActive : {}) }}
+                  >
+                    {item.label}
+                  </button>
+                )
+              })}
+            </div>
+          </nav>
+
+          <main style={styles.main}>
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </JobsProvider>
   )
 }
 
@@ -96,15 +102,15 @@ const styles = {
   appShell: { minHeight: '100vh', background: COLORS.black, color: '#fff', fontFamily: FONT_BODY, display: 'flex', flexDirection: 'column' },
   loadingFull: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#555', fontFamily: FONT_MONO, letterSpacing: '2px' },
   header: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem',
     padding: '0 1.5rem', height: '54px', flexShrink: 0,
     borderBottom: `2px solid ${COLORS.yellow}`, background: '#0d0d0d',
   },
-  logo: { display: 'flex', alignItems: 'center', gap: '8px' },
+  logo: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 },
   logoBar: { width: '4px', height: '26px', background: COLORS.yellow },
   logoText: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.25rem', letterSpacing: '2px', textTransform: 'uppercase', lineHeight: 1, color: '#fff' },
   accent: { color: COLORS.yellow },
-  headerRight: { display: 'flex', alignItems: 'center', gap: '1rem' },
+  headerRight: { display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 },
   companyName: { fontFamily: FONT_MONO, fontSize: '0.7rem', letterSpacing: '2px', textTransform: 'uppercase', color: COLORS.mid },
   userEmail: { fontFamily: FONT_MONO, fontSize: '0.68rem', color: '#555', display: 'none' },
   signOut: {

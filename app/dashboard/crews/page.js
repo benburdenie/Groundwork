@@ -1,31 +1,61 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { apiGet, apiPost, apiPatch, apiDelete } from '../../../lib/api'
 import { COLORS, FONT_COND, FONT_MONO, CREW_COLORS, shared } from '../../../lib/theme'
+import CrewPanel from './CrewPanel'
 
 const EMPTY_FORM = { name: '', foreman_name: '', color: CREW_COLORS[0], notes: '' }
 
 export default function CrewsPage() {
+  return (
+    <Suspense fallback={<div style={shared.loading}>Loading...</div>}>
+      <CrewsContent />
+    </Suspense>
+  )
+}
+
+function CrewsContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   const [crews, setCrews] = useState([])
+  const [workers, setWorkers] = useState([])
+  const [jobs, setJobs] = useState([])
+  const [equipment, setEquipment] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState(EMPTY_FORM)
+  const [viewingCrew, setViewingCrew] = useState(null)
 
-  async function loadCrews() {
-    const res = await apiGet('/api/crews')
-    if (res.error) setError(res.error)
-    else setCrews(res.crews || [])
+  async function loadAll() {
+    const [crewsRes, workersRes, jobsRes, equipmentRes] = await Promise.all([
+      apiGet('/api/crews'), apiGet('/api/workers'), apiGet('/api/jobs'), apiGet('/api/equipment'),
+    ])
+    if (crewsRes.error) setError(crewsRes.error)
+    else setCrews(crewsRes.crews || [])
+    setWorkers(workersRes.workers || [])
+    setJobs(jobsRes.jobs || [])
+    setEquipment(equipmentRes.equipment || [])
     setLoading(false)
   }
 
-  // loadCrews sets state after an await, not synchronously; the lint rule can't
-  // trace through the async call and flags this legitimate fetch-on-mount pattern.
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { loadCrews() }, [])
+  useEffect(() => { loadAll() }, [])
+
+  useEffect(() => {
+    const crewId = searchParams.get('crew')
+    if (crewId && crews.length > 0) {
+      const crew = crews.find(c => c.id === crewId)
+      if (crew) setViewingCrew(crew)
+      router.replace('/dashboard/crews')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, crews])
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value })
 
@@ -69,14 +99,14 @@ export default function CrewsPage() {
 
     setSaving(false)
     closeForm()
-    await loadCrews()
+    await loadAll()
   }
 
   const handleDelete = async (id) => {
     if (!confirm('Remove this crew?')) return
     const res = await apiDelete('/api/crews', { id })
     if (res.error) { setError(res.error); return }
-    await loadCrews()
+    await loadAll()
   }
 
   if (loading) return <div style={shared.loading}>Loading...</div>
@@ -143,10 +173,14 @@ export default function CrewsPage() {
             const permEquipment = crew.perm_equipment_assignments || []
             const availability = crew.crew_availability || []
             return (
-              <div key={crew.id} style={{ ...shared.card, ...styles.crewCard, borderLeft: `4px solid ${crew.color || COLORS.yellow}` }}>
+              <div
+                key={crew.id}
+                style={{ ...shared.card, ...styles.crewCard, borderLeft: `4px solid ${crew.color || COLORS.yellow}`, cursor: 'pointer' }}
+                onClick={() => setViewingCrew(crew)}
+              >
                 <div style={styles.cardHeader}>
                   <h3 style={styles.crewName}>{crew.name}</h3>
-                  <div style={styles.actions}>
+                  <div style={styles.actions} onClick={(e) => e.stopPropagation()}>
                     <button style={shared.btnSecondary} onClick={() => openEditForm(crew)}>Edit</button>
                     <button style={shared.btnDanger} onClick={() => handleDelete(crew.id)}>Remove</button>
                   </div>
@@ -167,6 +201,17 @@ export default function CrewsPage() {
             )
           })}
         </div>
+      )}
+
+      {viewingCrew && (
+        <CrewPanel
+          crew={crews.find(c => c.id === viewingCrew.id) || viewingCrew}
+          workers={workers}
+          jobs={jobs}
+          equipment={equipment}
+          onClose={() => setViewingCrew(null)}
+          onRefresh={loadAll}
+        />
       )}
     </div>
   )

@@ -24,3 +24,13 @@ body {
   color: var(--foreground);
   font-family: 'Barlow', Arial, Helvetica, sans-serif;
 }
+
+@media print {
+  .print-hide {
+    display: none !important;
+  }
+  .dispatch-sheet {
+    background: #fff !important;
+    color: #111 !important;
+  }
+}
