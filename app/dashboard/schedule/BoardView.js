@@ -1,14 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { COLORS, FONT_COND, FONT_MONO, shared } from '../../../lib/theme'
+import { COLORS, FONT_COND, FONT_MONO, RADIUS } from '../../../lib/theme'
 import { displayStatus, crewColor } from './helpers'
 
 const COLUMNS = [
-  { key: 'notstarted', label: 'Not Started', color: '#444', droppable: true },
-  { key: 'inprogress', label: 'In Progress', color: COLORS.green, droppable: true },
-  { key: 'overdue', label: 'Overdue', color: COLORS.red, droppable: false },
-  { key: 'complete', label: 'Complete', color: COLORS.greenDark, droppable: true },
+  { key: 'notstarted', label: 'Not started', color: COLORS.textSecondary, droppable: true },
+  { key: 'inprogress', label: 'In progress', color: COLORS.primary, droppable: true },
+  { key: 'overdue', label: 'Overdue', color: COLORS.danger, droppable: false },
+  { key: 'complete', label: 'Complete', color: COLORS.primaryHover, droppable: true },
 ]
 
 export default function BoardView({ jobs, crews, equipment, crewFilter, onCrewFilterChange, draggingJobId, onJobDragStart, onJobDragEnd, onDropStatus, onJobClick, onDropCrewOnJob, onDropEquipmentOnJob }) {
@@ -36,14 +36,14 @@ export default function BoardView({ jobs, crews, equipment, crewFilter, onCrewFi
   return (
     <div style={styles.page}>
       <div style={styles.toolbar}>
-        <select style={{ ...shared.select, width: '220px' }} value={crewFilter} onChange={(e) => onCrewFilterChange(e.target.value)}>
-          <option value="">All Crews</option>
+        <select className="field" style={{ width: '220px' }} value={crewFilter} onChange={(e) => onCrewFilterChange(e.target.value)}>
+          <option value="">All crews</option>
           {crews.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
       </div>
 
       <div style={styles.layout}>
-        <div style={styles.sidebar}>
+        <div className="card" style={styles.sidebar}>
           <div style={styles.sidebarTitle}>Crews</div>
           {crews.map(c => (
             <div
@@ -57,7 +57,7 @@ export default function BoardView({ jobs, crews, equipment, crewFilter, onCrewFi
             </div>
           ))}
 
-          <div style={{ ...styles.sidebarTitle, marginTop: '1.25rem' }}>Equipment</div>
+          <div style={{ ...styles.sidebarTitle, marginTop: '20px' }}>Equipment</div>
           {equipment.map(e => (
             <div
               key={e.id}
@@ -75,6 +75,7 @@ export default function BoardView({ jobs, crews, equipment, crewFilter, onCrewFi
           {COLUMNS.map(col => (
             <div
               key={col.key}
+              className="card"
               style={styles.column}
               onDragOver={col.droppable ? (e) => e.preventDefault() : undefined}
               onDrop={col.droppable ? () => onDropStatus(col.key) : undefined}
@@ -89,6 +90,7 @@ export default function BoardView({ jobs, crews, equipment, crewFilter, onCrewFi
                   <div
                     key={job.id}
                     draggable
+                    className="card card-hover"
                     onDragStart={() => onJobDragStart(job.id)}
                     onDragEnd={onJobDragEnd}
                     onDragOver={(e) => { e.preventDefault(); if (dragKind) setOverJobId(job.id) }}
@@ -96,10 +98,10 @@ export default function BoardView({ jobs, crews, equipment, crewFilter, onCrewFi
                     onDrop={(e) => { if (dragKind) { e.stopPropagation(); handleCardDrop(job) } }}
                     onClick={() => onJobClick(job)}
                     style={{
-                      ...shared.card, ...styles.jobCard,
+                      ...styles.jobCard,
                       borderLeft: `3px solid ${crewColor(job.crew)}`,
                       opacity: draggingJobId === job.id ? 0.4 : 1,
-                      outline: overJobId === job.id ? `2px dashed ${COLORS.yellow}` : 'none',
+                      outline: overJobId === job.id ? `2px dashed ${COLORS.primary}` : 'none',
                     }}
                   >
                     <div style={styles.jobName}>{job.name}</div>
@@ -126,23 +128,23 @@ export default function BoardView({ jobs, crews, equipment, crewFilter, onCrewFi
 }
 
 const styles = {
-  page: { display: 'flex', flexDirection: 'column', gap: '1rem' },
+  page: { display: 'flex', flexDirection: 'column', gap: '16px' },
   toolbar: { display: 'flex', justifyContent: 'flex-end' },
-  layout: { display: 'flex', gap: '1rem', alignItems: 'flex-start' },
-  sidebar: { width: '200px', flexShrink: 0, background: COLORS.panelBg, border: `1px solid ${COLORS.border}`, padding: '0.9rem' },
-  sidebarTitle: { fontFamily: FONT_MONO, fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: COLORS.mid, marginBottom: '0.5rem' },
-  dragItem: { background: COLORS.cardBg, border: `1px solid ${COLORS.border}`, padding: '0.4rem 0.6rem', fontSize: '0.8rem', marginBottom: '0.35rem', cursor: 'grab' },
-  board: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(220px, 1fr))', gap: '1rem', flex: 1, overflowX: 'auto' },
-  column: { display: 'flex', flexDirection: 'column', minWidth: 0, background: COLORS.panelBg, border: `1px solid ${COLORS.border}` },
-  columnHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 0.8rem', borderTop: '3px solid', background: '#131313' },
-  columnTitle: { fontFamily: FONT_MONO, fontSize: '0.65rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#ccc' },
-  columnCount: { fontFamily: FONT_MONO, fontSize: '0.7rem', color: COLORS.mid },
-  columnBody: { flex: 1, padding: '0.6rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', minHeight: '200px' },
-  columnEmpty: { fontFamily: FONT_MONO, fontSize: '0.6rem', letterSpacing: '1px', textTransform: 'uppercase', color: '#3a3a3a', textAlign: 'center', padding: '1.5rem 0' },
-  jobCard: { padding: '0.65rem 0.75rem', cursor: 'pointer' },
-  jobName: { fontFamily: FONT_COND, fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' },
-  jobMeta: { fontFamily: FONT_MONO, fontSize: '0.65rem', color: COLORS.mid, marginTop: '1px' },
-  jobCrew: { display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#aaa', marginTop: '0.4rem' },
-  jobEquip: { fontSize: '0.7rem', color: '#666', marginTop: '0.25rem' },
+  layout: { display: 'flex', gap: '24px', alignItems: 'flex-start' },
+  sidebar: { width: '200px', flexShrink: 0, padding: '16px' },
+  sidebarTitle: { fontFamily: FONT_MONO, fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.textMuted, marginBottom: '10px' },
+  dragItem: { background: COLORS.surfaceRaised, border: `1px solid ${COLORS.border}`, borderRadius: '6px', padding: '8px 10px', fontSize: '0.8rem', color: COLORS.textPrimary, marginBottom: '6px', cursor: 'grab' },
+  board: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(220px, 1fr))', gap: '16px', flex: 1, overflowX: 'auto' },
+  column: { display: 'flex', flexDirection: 'column', minWidth: 0, padding: 0, overflow: 'hidden' },
+  columnHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderTop: '3px solid', background: COLORS.surfaceRaised },
+  columnTitle: { fontFamily: FONT_MONO, fontSize: '0.65rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: COLORS.textSecondary },
+  columnCount: { fontFamily: FONT_MONO, fontSize: '0.7rem', color: COLORS.textMuted },
+  columnBody: { flex: 1, padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px', minHeight: '200px' },
+  columnEmpty: { fontFamily: FONT_MONO, fontSize: '0.6rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: COLORS.textMuted, textAlign: 'center', padding: '1.5rem 0' },
+  jobCard: { padding: '12px 14px', cursor: 'pointer' },
+  jobName: { fontFamily: FONT_COND, fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px', color: COLORS.textPrimary },
+  jobMeta: { fontFamily: FONT_MONO, fontSize: '0.65rem', color: COLORS.textMuted, marginTop: '1px' },
+  jobCrew: { display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: COLORS.textSecondary, marginTop: '0.5rem' },
+  jobEquip: { fontSize: '0.7rem', color: COLORS.textMuted, marginTop: '0.3rem' },
   dot: { width: '8px', height: '8px', borderRadius: '50%', display: 'inline-block', flexShrink: 0 },
 }

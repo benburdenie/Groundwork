@@ -22,7 +22,7 @@ export default function RootLayout({
             require updating all of them in lockstep to avoid silently falling back to system fonts. */}
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@400;600;700;800&family=Inconsolata:wght@400;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@400;600;700;800&family=Inconsolata:wght@400;600&display=swap"
           rel="stylesheet"
         />
       </head>

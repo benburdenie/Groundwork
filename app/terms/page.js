@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { COLORS, FONT_COND } from '../../lib/theme'
 
 export const metadata = {
   title: 'Terms of Service — GroundWork',
@@ -115,30 +116,30 @@ export default function TermsOfService() {
 }
 
 const styles = {
-  container: { minHeight: '100vh', background: '#111', color: '#fff', fontFamily: "'Barlow', sans-serif", display: 'flex', flexDirection: 'column' },
+  container: { minHeight: '100vh', background: COLORS.bg, color: COLORS.textPrimary, fontFamily: "'Inter', sans-serif", display: 'flex', flexDirection: 'column' },
   header: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     padding: '0 2rem', height: '64px',
-    borderBottom: '2px solid #F5C800', background: '#0d0d0d',
+    borderBottom: `1px solid ${COLORS.borderSubtle}`, background: COLORS.sidebarBg,
   },
-  logo: { fontFamily: 'monospace', fontWeight: 900, fontSize: '1.2rem', letterSpacing: '3px', textTransform: 'uppercase', color: '#fff', textDecoration: 'none' },
-  accent: { color: '#F5C800' },
-  backLink: { color: '#888', textDecoration: 'none', fontSize: '0.85rem', fontFamily: 'monospace' },
+  logo: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.2rem', letterSpacing: '2px', textTransform: 'uppercase', color: COLORS.textPrimary, textDecoration: 'none' },
+  accent: { color: COLORS.yellow },
+  backLink: { color: COLORS.textSecondary, textDecoration: 'none', fontSize: '0.85rem' },
   main: { flex: 1, maxWidth: '760px', width: '100%', margin: '0 auto', padding: '3rem 1.5rem 4rem' },
-  title: { fontSize: '2rem', fontWeight: 800, margin: '0 0 0.5rem' },
-  updated: { color: '#666', fontSize: '0.82rem', fontFamily: 'monospace', margin: '0 0 2.5rem' },
+  title: { fontFamily: FONT_COND, fontSize: '2rem', fontWeight: 700, margin: '0 0 0.5rem' },
+  updated: { color: COLORS.textMuted, fontSize: '0.82rem', fontFamily: "'Inconsolata', monospace", margin: '0 0 2.5rem' },
   h2: {
-    fontFamily: 'monospace', fontSize: '0.85rem', letterSpacing: '2px', textTransform: 'uppercase',
-    color: '#F5C800', margin: '2.25rem 0 0.9rem', paddingBottom: '0.6rem', borderBottom: '1px solid #2a2a2a',
+    fontFamily: "'Inconsolata', monospace", fontSize: '0.85rem', letterSpacing: '0.08em', textTransform: 'uppercase',
+    color: COLORS.primary, margin: '2.25rem 0 0.9rem', paddingBottom: '0.6rem', borderBottom: `1px solid ${COLORS.borderSubtle}`,
   },
-  p: { color: '#bbb', fontSize: '0.95rem', lineHeight: 1.7, margin: '0 0 1rem' },
+  p: { color: COLORS.textSecondary, fontSize: '0.95rem', lineHeight: 1.7, margin: '0 0 1rem' },
   ul: { margin: '0 0 1rem', paddingLeft: '1.25rem' },
-  li: { color: '#bbb', fontSize: '0.95rem', lineHeight: 1.7, marginBottom: '0.4rem' },
-  link: { color: '#F5C800', textDecoration: 'none' },
+  li: { color: COLORS.textSecondary, fontSize: '0.95rem', lineHeight: 1.7, marginBottom: '0.4rem' },
+  link: { color: COLORS.primary, textDecoration: 'none' },
   footer: {
-    borderTop: '1px solid #2a2a2a', padding: '1.5rem 2rem', textAlign: 'center',
-    color: '#555', fontSize: '0.78rem', fontFamily: 'monospace',
+    borderTop: `1px solid ${COLORS.borderSubtle}`, padding: '1.5rem 2rem', textAlign: 'center',
+    color: COLORS.textMuted, fontSize: '0.78rem',
   },
-  footerDot: { margin: '0 0.6rem', color: '#333' },
-  footerLink: { color: '#888', textDecoration: 'none' },
+  footerDot: { margin: '0 0.6rem', color: COLORS.border },
+  footerLink: { color: COLORS.textSecondary, textDecoration: 'none' },
 }

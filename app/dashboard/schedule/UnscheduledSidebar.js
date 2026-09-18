@@ -1,6 +1,6 @@
 'use client'
 
-import { COLORS, FONT_MONO, shared } from '../../../lib/theme'
+import { COLORS, FONT_MONO } from '../../../lib/theme'
 import { crewColor } from './helpers'
 
 export default function UnscheduledSidebar({ jobs, draggingJobId, onJobDragStart, onJobDragEnd, onDropUnschedule, onJobClick }) {
@@ -8,6 +8,7 @@ export default function UnscheduledSidebar({ jobs, draggingJobId, onJobDragStart
 
   return (
     <div
+      className="card"
       style={styles.sidebar}
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDropUnschedule}
@@ -38,10 +39,10 @@ export default function UnscheduledSidebar({ jobs, draggingJobId, onJobDragStart
 }
 
 const styles = {
-  sidebar: { width: '220px', flexShrink: 0, background: COLORS.panelBg, border: `1px solid ${COLORS.border}`, padding: '0.9rem' },
-  title: { fontFamily: FONT_MONO, fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: COLORS.mid, marginBottom: '0.4rem' },
-  hint: { fontSize: '0.72rem', color: '#555', marginBottom: '0.75rem', lineHeight: 1.4 },
-  list: { display: 'flex', flexDirection: 'column', gap: '0.4rem' },
-  item: { background: COLORS.cardBg, border: `1px solid ${COLORS.border}`, padding: '0.5rem 0.6rem', fontSize: '0.8rem', cursor: 'grab' },
-  empty: { color: '#444', fontSize: '0.78rem' },
+  sidebar: { width: '220px', flexShrink: 0, padding: '16px' },
+  title: { fontFamily: FONT_MONO, fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.textMuted, marginBottom: '6px' },
+  hint: { fontSize: '0.72rem', color: COLORS.textMuted, marginBottom: '14px', lineHeight: 1.4 },
+  list: { display: 'flex', flexDirection: 'column', gap: '6px' },
+  item: { background: COLORS.surfaceRaised, border: `1px solid ${COLORS.border}`, borderRadius: '6px', padding: '8px 10px', fontSize: '0.8rem', color: COLORS.textPrimary, cursor: 'grab' },
+  empty: { color: COLORS.textMuted, fontSize: '0.78rem' },
 }

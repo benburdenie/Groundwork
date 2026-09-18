@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
+import { COLORS, FONT_COND, FONT_MONO, RADIUS } from '../../lib/theme'
+import { Spinner } from '../dashboard/ui'
 
 export default function Login() {
   const router = useRouter()
@@ -73,7 +75,7 @@ export default function Login() {
           <div style={styles.group}>
             <label style={styles.label}>Email</label>
             <input
-              style={styles.input}
+              className="field"
               name="email"
               type="email"
               placeholder="you@company.com"
@@ -85,7 +87,7 @@ export default function Login() {
           <div style={styles.group}>
             <label style={styles.label}>Password</label>
             <input
-              style={styles.input}
+              className="field"
               name="password"
               type="password"
               placeholder="Your password"
@@ -100,8 +102,9 @@ export default function Login() {
 
           {error && <div style={styles.error}>{error}</div>}
 
-          <button style={styles.button} type="submit" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+          <button className="btn btn-primary" style={styles.fullWidthBtn} type="submit" disabled={loading}>
+            {loading && <Spinner />}
+            {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
 
@@ -115,7 +118,7 @@ export default function Login() {
               <form onSubmit={handleResetSubmit}>
                 <label style={styles.label}>Reset your password</label>
                 <input
-                  style={styles.input}
+                  className="field"
                   type="email"
                   placeholder="you@company.com"
                   value={resetEmail}
@@ -123,8 +126,9 @@ export default function Login() {
                   required
                 />
                 {resetError && <div style={styles.error}>{resetError}</div>}
-                <button style={styles.resetButton} type="submit" disabled={resetLoading}>
-                  {resetLoading ? 'Sending...' : 'Send Reset Link'}
+                <button className="btn btn-secondary" style={{ ...styles.fullWidthBtn, marginTop: '10px' }} type="submit" disabled={resetLoading}>
+                  {resetLoading && <Spinner />}
+                  {resetLoading ? 'Sending…' : 'Send reset link'}
                 </button>
               </form>
             )}
@@ -148,110 +152,77 @@ export default function Login() {
 const styles = {
   container: {
     minHeight: '100vh',
-    background: '#111',
+    background: COLORS.bg,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontFamily: "'Barlow', sans-serif",
+    fontFamily: "'Inter', sans-serif",
     padding: '1rem',
   },
   card: {
-    background: '#1a1a1a',
-    border: '1px solid #2a2a2a',
-    borderTop: '3px solid #F5C800',
+    background: COLORS.surface,
+    border: `1px solid ${COLORS.border}`,
+    borderTop: `3px solid ${COLORS.yellow}`,
+    borderRadius: RADIUS,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
     padding: '2.5rem',
     width: '100%',
     maxWidth: '440px',
   },
   logo: {
-    fontFamily: 'monospace',
-    fontWeight: 900,
+    fontFamily: FONT_COND,
+    fontWeight: 800,
     fontSize: '1.8rem',
-    letterSpacing: '3px',
+    letterSpacing: '2px',
     textTransform: 'uppercase',
-    color: '#fff',
+    color: COLORS.textPrimary,
     marginBottom: '1.5rem',
     textAlign: 'center',
   },
-  accent: { color: '#F5C800' },
-  heading: { color: '#fff', fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.35rem' },
-  sub: { color: '#888', fontSize: '0.85rem', marginBottom: '1.75rem' },
-  group: { marginBottom: '1rem' },
+  accent: { color: COLORS.yellow },
+  heading: { color: COLORS.textPrimary, fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.35rem' },
+  sub: { color: COLORS.textSecondary, fontSize: '0.85rem', marginBottom: '1.75rem' },
+  group: { marginBottom: '16px' },
   label: {
     display: 'block',
-    fontSize: '0.7rem',
-    letterSpacing: '2px',
+    fontSize: '11px',
+    letterSpacing: '0.08em',
     textTransform: 'uppercase',
-    color: '#888',
-    marginBottom: '0.4rem',
-    fontFamily: 'monospace',
-  },
-  input: {
-    width: '100%',
-    background: '#111',
-    border: '1px solid #333',
-    color: '#fff',
-    padding: '0.6rem 0.75rem',
-    fontSize: '0.9rem',
-    boxSizing: 'border-box',
-    outline: 'none',
+    color: COLORS.textSecondary,
+    marginBottom: '6px',
+    fontWeight: 500,
   },
   error: {
-    background: '#2a0d0d',
-    border: '1px solid #5a1a1a',
-    color: '#e87070',
-    padding: '0.6rem 0.75rem',
+    background: COLORS.dangerSubtle,
+    border: `1px solid ${COLORS.danger}40`,
+    color: COLORS.danger,
+    padding: '10px 14px',
     fontSize: '0.82rem',
-    marginBottom: '1rem',
-    fontFamily: 'monospace',
+    marginBottom: '16px',
+    borderRadius: '6px',
+    fontFamily: FONT_MONO,
   },
-  button: {
-    width: '100%',
-    background: '#F5C800',
-    color: '#111',
-    border: 'none',
-    padding: '0.75rem',
-    fontSize: '0.85rem',
-    fontWeight: 700,
-    letterSpacing: '2px',
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-    marginTop: '0.5rem',
-    fontFamily: 'monospace',
-  },
-  footer: { color: '#555', fontSize: '0.8rem', textAlign: 'center', marginTop: '1.5rem' },
-  legal: { color: '#555', fontSize: '0.75rem', textAlign: 'center', marginTop: '0.75rem' },
-  link: { color: '#F5C800', textDecoration: 'none' },
+  fullWidthBtn: { width: '100%' },
+  footer: { color: COLORS.textMuted, fontSize: '0.8rem', textAlign: 'center', marginTop: '1.5rem' },
+  legal: { color: COLORS.textMuted, fontSize: '0.75rem', textAlign: 'center', marginTop: '0.75rem' },
+  link: { color: COLORS.primary, textDecoration: 'none' },
   forgotLink: {
     background: 'none',
     border: 'none',
-    color: '#888',
+    color: COLORS.textSecondary,
     fontSize: '0.78rem',
-    fontFamily: "'Barlow', sans-serif",
+    fontFamily: "'Inter', sans-serif",
     cursor: 'pointer',
     padding: 0,
     marginTop: '0.5rem',
     textDecoration: 'underline',
   },
   forgotPanel: {
-    background: '#111',
-    border: '1px solid #2a2a2a',
+    background: COLORS.bg,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: RADIUS,
     padding: '1rem 1.1rem',
     marginTop: '1.25rem',
   },
-  resetSent: { color: '#bbb', fontSize: '0.85rem', lineHeight: 1.5, margin: 0 },
-  resetButton: {
-    width: '100%',
-    background: 'transparent',
-    color: '#F5C800',
-    border: '1px solid #F5C800',
-    padding: '0.6rem',
-    fontSize: '0.8rem',
-    fontWeight: 700,
-    letterSpacing: '2px',
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-    marginTop: '0.75rem',
-    fontFamily: 'monospace',
-  },
+  resetSent: { color: COLORS.textSecondary, fontSize: '0.85rem', lineHeight: 1.5, margin: 0 },
 }

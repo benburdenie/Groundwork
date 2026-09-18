@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { COLORS, FONT_COND, FONT_MONO, RADIUS } from '../../lib/theme'
+import { Spinner } from '../dashboard/ui'
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -60,7 +62,7 @@ export default function SignUp() {
           <h1 style={styles.logo}>Ground<span style={styles.accent}>Work</span></h1>
           <h2 style={styles.heading}>Account created</h2>
           <p style={styles.sub}>Your account is ready. Sign in to get started.</p>
-          <a href="/login" style={{ ...styles.button, display: 'block', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}>Sign In</a>
+          <a href="/login" className="btn btn-primary" style={styles.fullWidthLink}>Sign in</a>
         </div>
       </div>
     )
@@ -75,9 +77,9 @@ export default function SignUp() {
 
         <form onSubmit={handleSubmit}>
           <div style={styles.group}>
-            <label style={styles.label}>Company Name</label>
+            <label style={styles.label}>Company name</label>
             <input
-              style={styles.input}
+              className="field"
               name="companyName"
               placeholder="e.g. Smith Landscaping"
               value={formData.companyName}
@@ -86,9 +88,9 @@ export default function SignUp() {
             />
           </div>
           <div style={styles.group}>
-            <label style={styles.label}>Your Name</label>
+            <label style={styles.label}>Your name</label>
             <input
-              style={styles.input}
+              className="field"
               name="yourName"
               placeholder="Your full name"
               value={formData.yourName}
@@ -99,7 +101,7 @@ export default function SignUp() {
           <div style={styles.group}>
             <label style={styles.label}>Email</label>
             <input
-              style={styles.input}
+              className="field"
               name="email"
               type="email"
               placeholder="you@company.com"
@@ -111,7 +113,7 @@ export default function SignUp() {
           <div style={styles.group}>
             <label style={styles.label}>Password</label>
             <input
-              style={styles.input}
+              className="field"
               name="password"
               type="password"
               placeholder="Min. 6 characters"
@@ -124,8 +126,9 @@ export default function SignUp() {
 
           {error && <div style={styles.error}>{error}</div>}
 
-          <button style={styles.button} type="submit" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create Account'}
+          <button className="btn btn-primary" style={styles.fullWidthBtn} type="submit" disabled={loading}>
+            {loading && <Spinner />}
+            {loading ? 'Creating account…' : 'Create account'}
           </button>
 
           <p style={styles.legal}>
@@ -146,99 +149,75 @@ export default function SignUp() {
 const styles = {
   container: {
     minHeight: '100vh',
-    background: '#111',
+    background: COLORS.bg,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontFamily: "'Barlow', sans-serif",
+    fontFamily: "'Inter', sans-serif",
     padding: '1rem',
   },
   card: {
-    background: '#1a1a1a',
-    border: '1px solid #2a2a2a',
-    borderTop: '3px solid #F5C800',
+    background: COLORS.surface,
+    border: `1px solid ${COLORS.border}`,
+    borderTop: `3px solid ${COLORS.yellow}`,
+    borderRadius: RADIUS,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
     padding: '2.5rem',
     width: '100%',
     maxWidth: '440px',
   },
   logo: {
-    fontFamily: 'monospace',
-    fontWeight: 900,
+    fontFamily: FONT_COND,
+    fontWeight: 800,
     fontSize: '1.8rem',
-    letterSpacing: '3px',
+    letterSpacing: '2px',
     textTransform: 'uppercase',
-    color: '#fff',
+    color: COLORS.textPrimary,
     marginBottom: '1.5rem',
     textAlign: 'center',
   },
-  accent: { color: '#F5C800' },
+  accent: { color: COLORS.yellow },
   heading: {
-    color: '#fff',
+    color: COLORS.textPrimary,
     fontSize: '1.2rem',
     fontWeight: 700,
     marginBottom: '0.35rem',
   },
   sub: {
-    color: '#888',
+    color: COLORS.textSecondary,
     fontSize: '0.85rem',
     marginBottom: '1.75rem',
   },
-  group: { marginBottom: '1rem' },
+  group: { marginBottom: '16px' },
   label: {
     display: 'block',
-    fontSize: '0.7rem',
-    letterSpacing: '2px',
+    fontSize: '11px',
+    letterSpacing: '0.08em',
     textTransform: 'uppercase',
-    color: '#888',
-    marginBottom: '0.4rem',
-    fontFamily: 'monospace',
-  },
-  input: {
-    width: '100%',
-    background: '#111',
-    border: '1px solid #333',
-    color: '#fff',
-    padding: '0.6rem 0.75rem',
-    fontSize: '0.9rem',
-    boxSizing: 'border-box',
-    outline: 'none',
+    color: COLORS.textSecondary,
+    marginBottom: '6px',
+    fontWeight: 500,
   },
   error: {
-    background: '#2a0d0d',
-    border: '1px solid #5a1a1a',
-    color: '#e87070',
-    padding: '0.6rem 0.75rem',
+    background: COLORS.dangerSubtle,
+    border: `1px solid ${COLORS.danger}40`,
+    color: COLORS.danger,
+    padding: '10px 14px',
     fontSize: '0.82rem',
-    marginBottom: '1rem',
-    fontFamily: 'monospace',
+    marginBottom: '16px',
+    borderRadius: '6px',
+    fontFamily: FONT_MONO,
   },
-  button: {
-    width: '100%',
-    background: '#F5C800',
-    color: '#111',
-    border: 'none',
-    padding: '0.75rem',
-    fontSize: '0.85rem',
-    fontWeight: 700,
-    letterSpacing: '2px',
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-    marginTop: '0.5rem',
-    fontFamily: 'monospace',
-  },
-  footer: {
-    color: '#555',
-    fontSize: '0.8rem',
-    textAlign: 'center',
-    marginTop: '1.5rem',
-  },
+  fullWidthBtn: { width: '100%', marginTop: '4px' },
+  fullWidthLink: { width: '100%', textDecoration: 'none', boxSizing: 'border-box' },
+  footer: { color: COLORS.textMuted, fontSize: '0.8rem', textAlign: 'center', marginTop: '1.5rem' },
   legal: {
-    color: '#555',
+    color: COLORS.textMuted,
     fontSize: '0.75rem',
     textAlign: 'center',
     lineHeight: 1.5,
     marginTop: '0.9rem',
     marginBottom: 0,
   },
-  link: { color: '#F5C800', textDecoration: 'none' },
+  link: { color: COLORS.primary, textDecoration: 'none' },
 }

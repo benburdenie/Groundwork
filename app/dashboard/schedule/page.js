@@ -3,10 +3,12 @@
 import { Suspense, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { CloudRain, CalendarClock, Printer, Plus } from 'lucide-react'
 import { apiGet, apiPost, apiPatch, apiDelete } from '../../../lib/api'
-import { COLORS, FONT_COND, FONT_MONO, shared } from '../../../lib/theme'
+import { COLORS, FONT_COND, FONT_MONO, RADIUS, shared } from '../../../lib/theme'
 import { buildWorkScheduleMap, computeEndDate, addWorkDays } from '../../../lib/workdays'
 import { useJobsContext } from '../JobsContext'
+import { Skeleton } from '../ui'
 import MonthView from './MonthView'
 import WeekView from './WeekView'
 import BoardView from './BoardView'
@@ -19,13 +21,13 @@ import { RainDayModal, WorkDayModal } from './WorkdayModals'
 
 const VIEWS = [
   { key: 'month', label: 'Month' },
-  { key: 'week', label: '7 Day' },
+  { key: 'week', label: '7 day' },
   { key: 'board', label: 'Board' },
 ]
 
 export default function SchedulePage() {
   return (
-    <Suspense fallback={<div style={shared.loading}>Loading...</div>}>
+    <Suspense fallback={<Skeleton height="60vh" />}>
       <ScheduleContent />
     </Suspense>
   )
@@ -243,7 +245,14 @@ function ScheduleContent() {
     await refreshAll()
   }
 
-  if (loading) return <div style={shared.loading}>Loading...</div>
+  if (loading) return (
+    <div>
+      <div style={shared.titleRow}>
+        <h2 style={shared.pageTitle}>Schedule</h2>
+      </div>
+      <Skeleton height="60vh" />
+    </div>
+  )
 
   const showSidebar = view === 'month' || view === 'week'
 
@@ -259,10 +268,10 @@ function ScheduleContent() {
               </button>
             ))}
           </div>
-          <button style={shared.btnSecondary} onClick={() => setRainDayOpen(true)}>Rain Day</button>
-          <button style={shared.btnSecondary} onClick={() => setWorkDayOpen(true)}>Work Day</button>
-          <Link href="/dashboard/dispatch" target="_blank" style={{ ...shared.btnSecondary, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>Dispatch Sheet</Link>
-          <button style={shared.btnPrimary} onClick={() => openCreate()}>+ New Job</button>
+          <button className="btn btn-secondary" onClick={() => setRainDayOpen(true)}><CloudRain size={15} />Rain day</button>
+          <button className="btn btn-secondary" onClick={() => setWorkDayOpen(true)}><CalendarClock size={15} />Work day</button>
+          <Link href="/dashboard/dispatch" target="_blank" className="btn btn-secondary"><Printer size={15} />Dispatch sheet</Link>
+          <button className="btn btn-primary" onClick={() => openCreate()}><Plus size={15} />New job</button>
         </div>
       </div>
 
@@ -271,9 +280,9 @@ function ScheduleContent() {
       {view === 'month' && (
         <div style={styles.monthToolbar}>
           <div style={styles.nav}>
-            <button style={styles.navBtn} onClick={() => setCursor(c => new Date(c.getFullYear(), c.getMonth() - 1, 1))}>←</button>
-            <button style={styles.todayBtn} onClick={() => { const d = new Date(); setCursor(new Date(d.getFullYear(), d.getMonth(), 1)) }}>Today</button>
-            <button style={styles.navBtn} onClick={() => setCursor(c => new Date(c.getFullYear(), c.getMonth() + 1, 1))}>→</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => setCursor(c => new Date(c.getFullYear(), c.getMonth() - 1, 1))}>←</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => { const d = new Date(); setCursor(new Date(d.getFullYear(), d.getMonth(), 1)) }}>Today</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => setCursor(c => new Date(c.getFullYear(), c.getMonth() + 1, 1))}>→</button>
           </div>
           <div style={styles.monthLabel}>{cursor.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</div>
         </div>
@@ -404,15 +413,13 @@ function ScheduleContent() {
 
 const styles = {
   page: { display: 'flex', flexDirection: 'column' },
-  toolbarRight: { display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' },
-  viewToggle: { display: 'flex', border: `1px solid ${COLORS.border}` },
-  viewBtn: { background: 'transparent', border: 'none', color: COLORS.mid, fontFamily: FONT_MONO, fontSize: '0.65rem', letterSpacing: '1px', textTransform: 'uppercase', padding: '0.4rem 0.8rem', cursor: 'pointer' },
-  viewBtnActive: { background: COLORS.yellow, color: COLORS.black },
-  monthToolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' },
-  nav: { display: 'flex', alignItems: 'center', gap: '0.5rem' },
-  navBtn: { background: 'transparent', border: `1px solid ${COLORS.border}`, color: '#fff', width: '30px', height: '30px', cursor: 'pointer', fontSize: '0.9rem' },
-  todayBtn: { background: 'transparent', border: `1px solid ${COLORS.border}`, color: COLORS.mid, fontFamily: FONT_MONO, fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', padding: '0.3rem 0.8rem', cursor: 'pointer' },
-  monthLabel: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.4rem', letterSpacing: '2px', textTransform: 'uppercase' },
-  layout: { display: 'flex', gap: '1rem', alignItems: 'flex-start' },
+  toolbarRight: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' },
+  viewToggle: { display: 'flex', border: `1px solid ${COLORS.border}`, borderRadius: RADIUS, overflow: 'hidden' },
+  viewBtn: { background: 'transparent', border: 'none', color: COLORS.textSecondary, fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px', padding: '8px 14px', cursor: 'pointer', transition: 'background-color 150ms ease, color 150ms ease' },
+  viewBtnActive: { background: COLORS.primary, color: COLORS.bg },
+  monthToolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '0.75rem' },
+  nav: { display: 'flex', alignItems: 'center', gap: '8px' },
+  monthLabel: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.4rem', letterSpacing: '1px', textTransform: 'uppercase', color: COLORS.textPrimary },
+  layout: { display: 'flex', gap: '24px', alignItems: 'flex-start' },
   main: { flex: 1, minWidth: 0 },
 }

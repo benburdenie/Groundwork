@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Truck } from 'lucide-react'
 import { apiGet, apiPost, apiPatch, apiDelete } from '../../../lib/api'
 import { COLORS, FONT_COND, EQUIPMENT_CATEGORIES, STATUS_LABELS, shared, badgeStyle } from '../../../lib/theme'
+import { Spinner, SkeletonGrid, EmptyState } from '../ui'
 
 const EMPTY_FORM = { name: '', category: EQUIPMENT_CATEGORIES[0].value, status: 'available', notes: '' }
 
@@ -26,8 +28,6 @@ export default function EquipmentPage() {
     setLoading(false)
   }
 
-  // loadEquipment sets state after an await, not synchronously; the lint rule can't
-  // trace through the async call and flags this legitimate fetch-on-mount pattern.
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadEquipment() }, [])
 
@@ -83,14 +83,21 @@ export default function EquipmentPage() {
     await loadEquipment()
   }
 
-  if (loading) return <div style={shared.loading}>Loading...</div>
+  if (loading) return (
+    <div>
+      <div style={shared.titleRow}>
+        <h2 style={shared.pageTitle}>Equipment</h2>
+      </div>
+      <SkeletonGrid />
+    </div>
+  )
 
   return (
     <div>
       <div style={shared.titleRow}>
         <h2 style={shared.pageTitle}>Equipment</h2>
-        <button style={shared.btnPrimary} onClick={() => (showForm ? closeForm() : openAddForm())}>
-          {showForm ? 'Cancel' : '+ New Equipment'}
+        <button className="btn btn-primary" onClick={() => (showForm ? closeForm() : openAddForm())}>
+          {showForm ? 'Cancel' : '+ New equipment'}
         </button>
       </div>
 
@@ -101,11 +108,11 @@ export default function EquipmentPage() {
           <div style={shared.formRow}>
             <div style={shared.group}>
               <label style={shared.label}>Name</label>
-              <input style={shared.input} name="name" placeholder="e.g. F-350 #2" value={formData.name} onChange={handleChange} required />
+              <input className="field" name="name" placeholder="e.g. F-350 #2" value={formData.name} onChange={handleChange} required />
             </div>
             <div style={shared.group}>
               <label style={shared.label}>Category</label>
-              <select style={shared.select} name="category" value={formData.category} onChange={handleChange}>
+              <select className="field" name="category" value={formData.category} onChange={handleChange}>
                 {EQUIPMENT_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
@@ -113,29 +120,36 @@ export default function EquipmentPage() {
 
           <div style={shared.group}>
             <label style={shared.label}>Status</label>
-            <select style={shared.select} name="status" value={formData.status} onChange={handleChange}>
+            <select className="field" name="status" value={formData.status} onChange={handleChange}>
               <option value="available">Available</option>
-              <option value="repair">In Repair</option>
+              <option value="repair">In repair</option>
             </select>
           </div>
 
           <div style={shared.group}>
             <label style={shared.label}>Notes</label>
-            <textarea style={shared.textarea} name="notes" placeholder="Optional notes" value={formData.notes} onChange={handleChange} rows={3} />
+            <textarea className="field" name="notes" placeholder="Optional notes" value={formData.notes} onChange={handleChange} rows={3} />
           </div>
 
-          <button style={shared.btnPrimary} type="submit" disabled={saving}>
-            {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Save Equipment'}
+          <button className="btn btn-primary" type="submit" disabled={saving}>
+            {saving && <Spinner />}
+            {saving ? 'Saving…' : editingId ? 'Save changes' : 'Save equipment'}
           </button>
         </form>
       )}
 
       {equipment.length === 0 ? (
-        <p style={shared.empty}>No equipment yet. Add your first piece of equipment to get started.</p>
+        <EmptyState
+          icon={Truck}
+          title="No equipment yet"
+          subtitle="Add trucks, trailers, and machines to track what's deployed where."
+          actionLabel="Add your first equipment"
+          onAction={openAddForm}
+        />
       ) : (
         <div style={styles.grid}>
           {equipment.map(item => (
-            <div key={item.id} style={{ ...shared.card, ...styles.itemCard }}>
+            <div key={item.id} className="card card-hover" style={styles.itemCard}>
               <div style={styles.cardHeader}>
                 <h3 style={styles.itemName}>{item.name}</h3>
                 <span style={badgeStyle(item.computed_status)}>{STATUS_LABELS[item.computed_status]}</span>
@@ -147,8 +161,8 @@ export default function EquipmentPage() {
               </p>
               {item.notes && <p style={styles.itemNotes}>{item.notes}</p>}
               <div style={styles.actions}>
-                <button style={shared.btnSecondary} onClick={() => openEditForm(item)}>Edit</button>
-                <button style={shared.btnDanger} onClick={() => handleDelete(item.id)}>Remove</button>
+                <button className="btn btn-secondary btn-sm" onClick={() => openEditForm(item)}>Edit</button>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)}>Remove</button>
               </div>
             </div>
           ))}
@@ -159,11 +173,11 @@ export default function EquipmentPage() {
 }
 
 const styles = {
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' },
-  itemCard: { padding: '1rem 1.25rem' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '24px' },
+  itemCard: { padding: '20px' },
   cardHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.35rem' },
-  itemName: { margin: 0, fontFamily: FONT_COND, fontWeight: 700, fontSize: '1.15rem', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  itemMeta: { color: COLORS.mid, fontSize: '0.82rem', margin: '0.2rem 0 0' },
-  itemNotes: { color: '#666', fontSize: '0.8rem', margin: '0.4rem 0 0' },
-  actions: { display: 'flex', gap: '0.4rem', marginTop: '0.75rem' },
+  itemName: { margin: 0, fontFamily: FONT_COND, fontWeight: 700, fontSize: '1.15rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: COLORS.textPrimary },
+  itemMeta: { color: COLORS.textSecondary, fontSize: '0.82rem', margin: '0.2rem 0 0' },
+  itemNotes: { color: COLORS.textMuted, fontSize: '0.8rem', margin: '0.4rem 0 0' },
+  actions: { display: 'flex', gap: '0.5rem', marginTop: '0.9rem' },
 }

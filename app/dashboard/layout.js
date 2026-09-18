@@ -2,18 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { Calendar, Users, Truck, HardHat, LogOut } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { apiGet } from '../../lib/api'
-import { COLORS, FONT_COND, FONT_MONO, FONT_BODY } from '../../lib/theme'
+import { COLORS, FONT_COND, FONT_MONO } from '../../lib/theme'
 import { JobsProvider } from './JobsContext'
 import OverdueBanner from './OverdueBanner'
 import Search from './Search'
 
 const NAV_ITEMS = [
-  { href: '/dashboard/schedule', label: 'Schedule' },
-  { href: '/dashboard/crews', label: 'Crews' },
-  { href: '/dashboard/equipment', label: 'Equipment' },
-  { href: '/dashboard/workers', label: 'Workers' },
+  { href: '/dashboard/schedule', label: 'Schedule', icon: Calendar },
+  { href: '/dashboard/crews', label: 'Crews', icon: Users },
+  { href: '/dashboard/equipment', label: 'Equipment', icon: Truck },
+  { href: '/dashboard/workers', label: 'Workers', icon: HardHat },
 ]
 
 export default function DashboardLayout({ children }) {
@@ -53,41 +54,43 @@ export default function DashboardLayout({ children }) {
   return (
     <JobsProvider>
       <div style={styles.appShell}>
-        <header style={styles.header} className="print-hide">
-          <div style={styles.logo}>
+        <nav style={styles.sidebar} className="print-hide">
+          <div style={styles.logoArea}>
             <div style={styles.logoBar} />
             <span style={styles.logoText}>Ground<span style={styles.accent}>Work</span></span>
           </div>
-          <Search />
-          <div style={styles.headerRight}>
-            {company?.name && <span style={styles.companyName}>{company.name}</span>}
-            <span style={styles.userEmail}>{user?.email}</span>
-            <button style={styles.signOut} onClick={handleSignOut}>Sign Out</button>
+          <div style={styles.sidebarBody}>
+            {NAV_ITEMS.map(item => {
+              const active = pathname.startsWith(item.href)
+              const Icon = item.icon
+              return (
+                <button
+                  key={item.href}
+                  onClick={() => router.push(item.href)}
+                  className={`nav-item${active ? ' active' : ''}`}
+                >
+                  <Icon size={17} strokeWidth={2} />
+                  {item.label}
+                </button>
+              )
+            })}
           </div>
-        </header>
+        </nav>
 
-        <div className="print-hide"><OverdueBanner /></div>
+        <div style={styles.contentColumn}>
+          <header style={styles.header} className="print-hide">
+            <Search />
+            <div style={styles.headerRight}>
+              {company?.name && <span style={styles.companyName}>{company.name}</span>}
+              <span style={styles.userEmail}>{user?.email}</span>
+              <button className="btn btn-secondary btn-sm" onClick={handleSignOut}>
+                <LogOut size={14} strokeWidth={2} />
+                Sign out
+              </button>
+            </div>
+          </header>
 
-        <div style={styles.body}>
-          <nav style={styles.sidebar} className="print-hide">
-            <div style={styles.sidebarHeader}>
-              <span style={styles.sidebarTitle}>Navigation</span>
-            </div>
-            <div style={styles.sidebarBody}>
-              {NAV_ITEMS.map(item => {
-                const active = pathname.startsWith(item.href)
-                return (
-                  <button
-                    key={item.href}
-                    onClick={() => router.push(item.href)}
-                    style={{ ...styles.navItem, ...(active ? styles.navItemActive : {}) }}
-                  >
-                    {item.label}
-                  </button>
-                )
-              })}
-            </div>
-          </nav>
+          <div className="print-hide"><OverdueBanner /></div>
 
           <main style={styles.main}>
             {children}
@@ -99,41 +102,33 @@ export default function DashboardLayout({ children }) {
 }
 
 const styles = {
-  appShell: { minHeight: '100vh', background: COLORS.black, color: '#fff', fontFamily: FONT_BODY, display: 'flex', flexDirection: 'column' },
-  loadingFull: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#555', fontFamily: FONT_MONO, letterSpacing: '2px' },
-  header: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem',
-    padding: '0 1.5rem', height: '54px', flexShrink: 0,
-    borderBottom: `2px solid ${COLORS.yellow}`, background: '#0d0d0d',
-  },
-  logo: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 },
-  logoBar: { width: '4px', height: '26px', background: COLORS.yellow },
-  logoText: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.25rem', letterSpacing: '2px', textTransform: 'uppercase', lineHeight: 1, color: '#fff' },
-  accent: { color: COLORS.yellow },
-  headerRight: { display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 },
-  companyName: { fontFamily: FONT_MONO, fontSize: '0.7rem', letterSpacing: '2px', textTransform: 'uppercase', color: COLORS.mid },
-  userEmail: { fontFamily: FONT_MONO, fontSize: '0.68rem', color: '#555', display: 'none' },
-  signOut: {
-    background: 'transparent', border: '1px solid #333', color: COLORS.mid,
-    fontFamily: FONT_MONO, fontSize: '0.65rem', letterSpacing: '1px',
-    textTransform: 'uppercase', padding: '0.35rem 0.75rem', cursor: 'pointer',
-  },
-  body: { display: 'flex', flex: 1, minHeight: 0 },
+  appShell: { minHeight: '100vh', background: COLORS.bg, color: COLORS.textPrimary, display: 'flex' },
+  loadingFull: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: COLORS.textMuted, fontFamily: FONT_MONO, letterSpacing: '2px', width: '100%' },
+
   sidebar: {
-    width: '220px', minWidth: 0, flexShrink: 0,
-    borderRight: `1px solid ${COLORS.border}`, background: COLORS.panelBg,
+    width: '220px', minWidth: '220px', flexShrink: 0, height: '100vh', position: 'sticky', top: 0,
+    background: COLORS.sidebarBg, borderRight: `1px solid ${COLORS.borderSubtle}`,
     display: 'flex', flexDirection: 'column',
   },
-  sidebarHeader: { padding: '0.9rem 1rem', borderBottom: `1px solid ${COLORS.border}` },
-  sidebarTitle: { fontFamily: FONT_MONO, fontSize: '0.6rem', letterSpacing: '3px', textTransform: 'uppercase', color: COLORS.mid },
-  sidebarBody: { flex: 1, padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '2px' },
-  navItem: {
-    textAlign: 'left', background: 'transparent',
-    borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-    borderLeftWidth: '3px', borderLeftStyle: 'solid', borderLeftColor: 'transparent',
-    color: COLORS.mid, fontFamily: FONT_COND, fontWeight: 700, fontSize: '0.95rem',
-    letterSpacing: '0.5px', textTransform: 'uppercase', padding: '0.6rem 0.75rem', cursor: 'pointer',
+  logoArea: {
+    height: '64px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '10px',
+    padding: '0 20px', borderBottom: `1px solid ${COLORS.borderSubtle}`,
   },
-  navItemActive: { color: '#fff', borderLeftColor: COLORS.yellow, background: COLORS.cardBg },
-  main: { flex: 1, minWidth: 0, overflowY: 'auto', padding: '2rem 2rem 3rem' },
+  logoBar: { width: '4px', height: '22px', background: COLORS.yellow, borderRadius: '2px' },
+  logoText: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.2rem', letterSpacing: '1.5px', textTransform: 'uppercase', lineHeight: 1, color: COLORS.textPrimary },
+  accent: { color: COLORS.yellow },
+
+  sidebarBody: { flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto' },
+
+  contentColumn: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: '100vh' },
+  header: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem',
+    padding: '0 24px', height: '56px', flexShrink: 0,
+    background: COLORS.sidebarBg, borderBottom: `1px solid ${COLORS.borderSubtle}`,
+  },
+  headerRight: { display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 },
+  companyName: { fontFamily: FONT_MONO, fontSize: '0.7rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: COLORS.textSecondary },
+  userEmail: { fontFamily: FONT_MONO, fontSize: '0.68rem', color: COLORS.textMuted, display: 'none' },
+
+  main: { flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 32px 48px' },
 }

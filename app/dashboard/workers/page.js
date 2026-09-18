@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { HardHat } from 'lucide-react'
 import { apiGet, apiPost, apiPatch, apiDelete } from '../../../lib/api'
 import { COLORS, FONT_COND, FONT_MONO, WORKER_ROLES, shared } from '../../../lib/theme'
+import { Spinner, Skeleton, EmptyState } from '../ui'
 
 const EMPTY_FORM = { name: '', role: WORKER_ROLES[WORKER_ROLES.length - 1], phone: '', email: '', crew_id: '', notes: '' }
 
@@ -24,8 +26,6 @@ export default function WorkersPage() {
     setLoading(false)
   }
 
-  // loadAll sets state after an await, not synchronously; the lint rule can't
-  // trace through the async call and flags this legitimate fetch-on-mount pattern.
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadAll() }, [])
 
@@ -83,7 +83,16 @@ export default function WorkersPage() {
     await loadAll()
   }
 
-  if (loading) return <div style={shared.loading}>Loading...</div>
+  if (loading) return (
+    <div>
+      <div style={shared.titleRow}>
+        <h2 style={shared.pageTitle}>Workers</h2>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} height="48px" style={{ borderRadius: '8px' }} />)}
+      </div>
+    </div>
+  )
 
   const grouped = new Map()
   for (const crew of crews) grouped.set(crew.id, { crew, workers: [] })
@@ -97,8 +106,8 @@ export default function WorkersPage() {
     <div>
       <div style={shared.titleRow}>
         <h2 style={shared.pageTitle}>Workers</h2>
-        <button style={shared.btnPrimary} onClick={() => (showForm ? closeForm() : openAddForm())}>
-          {showForm ? 'Cancel' : '+ New Worker'}
+        <button className="btn btn-primary" onClick={() => (showForm ? closeForm() : openAddForm())}>
+          {showForm ? 'Cancel' : '+ New worker'}
         </button>
       </div>
 
@@ -109,11 +118,11 @@ export default function WorkersPage() {
           <div style={shared.formRow}>
             <div style={shared.group}>
               <label style={shared.label}>Name</label>
-              <input style={shared.input} name="name" placeholder="Full name" value={formData.name} onChange={handleChange} required />
+              <input className="field" name="name" placeholder="Full name" value={formData.name} onChange={handleChange} required />
             </div>
             <div style={shared.group}>
               <label style={shared.label}>Role</label>
-              <select style={shared.select} name="role" value={formData.role} onChange={handleChange}>
+              <select className="field" name="role" value={formData.role} onChange={handleChange}>
                 {WORKER_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
@@ -122,17 +131,17 @@ export default function WorkersPage() {
           <div style={shared.formRow}>
             <div style={shared.group}>
               <label style={shared.label}>Phone</label>
-              <input style={shared.input} name="phone" placeholder="Phone number" value={formData.phone} onChange={handleChange} />
+              <input className="field" name="phone" placeholder="Phone number" value={formData.phone} onChange={handleChange} />
             </div>
             <div style={shared.group}>
               <label style={shared.label}>Email</label>
-              <input style={shared.input} name="email" type="email" placeholder="Email address" value={formData.email} onChange={handleChange} />
+              <input className="field" name="email" type="email" placeholder="Email address" value={formData.email} onChange={handleChange} />
             </div>
           </div>
 
           <div style={shared.group}>
             <label style={shared.label}>Crew</label>
-            <select style={shared.select} name="crew_id" value={formData.crew_id} onChange={handleChange}>
+            <select className="field" name="crew_id" value={formData.crew_id} onChange={handleChange}>
               <option value="">— Unassigned —</option>
               {crews.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -140,22 +149,29 @@ export default function WorkersPage() {
 
           <div style={shared.group}>
             <label style={shared.label}>Notes</label>
-            <textarea style={shared.textarea} name="notes" placeholder="Optional notes" value={formData.notes} onChange={handleChange} rows={3} />
+            <textarea className="field" name="notes" placeholder="Optional notes" value={formData.notes} onChange={handleChange} rows={3} />
           </div>
 
-          <button style={shared.btnPrimary} type="submit" disabled={saving}>
-            {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Save Worker'}
+          <button className="btn btn-primary" type="submit" disabled={saving}>
+            {saving && <Spinner />}
+            {saving ? 'Saving…' : editingId ? 'Save changes' : 'Save worker'}
           </button>
         </form>
       )}
 
       {workers.length === 0 ? (
-        <p style={shared.empty}>No workers yet. Add your first worker to get started.</p>
+        <EmptyState
+          icon={HardHat}
+          title="No workers yet"
+          subtitle="Add your crew members to start assigning them to jobs."
+          actionLabel="Add your first worker"
+          onAction={openAddForm}
+        />
       ) : (
         <div>
           {[...grouped.values()].map(({ crew, workers }) => workers.length > 0 && (
             <div key={crew.id} style={styles.section}>
-              <h3 style={{ ...styles.sectionTitle, color: crew.color || COLORS.yellow }}>{crew.name}</h3>
+              <h3 style={{ ...styles.sectionTitle, color: crew.color || COLORS.primary }}>{crew.name}</h3>
               <div style={styles.list}>
                 {workers.map(w => (
                   <WorkerRow key={w.id} worker={w} onEdit={openEditForm} onDelete={handleDelete} />
@@ -182,7 +198,7 @@ export default function WorkersPage() {
 
 function WorkerRow({ worker, onEdit, onDelete }) {
   return (
-    <div style={{ ...shared.card, ...styles.row }}>
+    <div className="card row row-hover" style={styles.row}>
       <div>
         <span style={styles.workerName}>{worker.name}</span>
         <span style={styles.workerRole}>{worker.role}</span>
@@ -190,20 +206,20 @@ function WorkerRow({ worker, onEdit, onDelete }) {
         {worker.email && <span style={styles.workerContact}>{worker.email}</span>}
       </div>
       <div style={styles.actions}>
-        <button style={shared.btnSecondary} onClick={() => onEdit(worker)}>Edit</button>
-        <button style={shared.btnDanger} onClick={() => onDelete(worker.id)}>Remove</button>
+        <button className="btn btn-secondary btn-sm" onClick={() => onEdit(worker)}>Edit</button>
+        <button className="btn btn-danger btn-sm" onClick={() => onDelete(worker.id)}>Remove</button>
       </div>
     </div>
   )
 }
 
 const styles = {
-  section: { marginBottom: '1.75rem' },
-  sectionTitle: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.6rem' },
-  list: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
-  row: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', gap: '1rem', flexWrap: 'wrap' },
-  workerName: { fontWeight: 700, fontSize: '0.95rem', marginRight: '0.75rem' },
-  workerRole: { fontFamily: FONT_MONO, fontSize: '0.65rem', letterSpacing: '1px', textTransform: 'uppercase', color: COLORS.mid, marginRight: '0.75rem' },
-  workerContact: { fontFamily: FONT_MONO, fontSize: '0.72rem', color: '#666', marginRight: '0.75rem' },
-  actions: { display: 'flex', gap: '0.4rem', flexShrink: 0 },
+  section: { marginBottom: '28px' },
+  sectionTitle: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' },
+  list: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  row: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', gap: '1rem', flexWrap: 'wrap' },
+  workerName: { fontWeight: 600, fontSize: '0.95rem', marginRight: '0.75rem', color: COLORS.textPrimary },
+  workerRole: { fontFamily: FONT_MONO, fontSize: '0.65rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: COLORS.textSecondary, marginRight: '0.75rem' },
+  workerContact: { fontFamily: FONT_MONO, fontSize: '0.72rem', color: COLORS.textMuted, marginRight: '0.75rem' },
+  actions: { display: 'flex', gap: '0.5rem', flexShrink: 0 },
 }

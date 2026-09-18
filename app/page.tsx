@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { COLORS, FONT_COND, RADIUS } from '../lib/theme'
 
 export default function Home() {
   return (
@@ -6,8 +7,8 @@ export default function Home() {
       <div style={styles.header}>
         <h1 style={styles.logo}>Ground<span style={styles.accent}>Work</span></h1>
         <div style={styles.headerLinks}>
-          <Link href="/login" style={styles.loginLink}>Sign In</Link>
-          <Link href="/signup" style={styles.signupBtn}>Get Started</Link>
+          <Link href="/login" style={styles.loginLink}>Sign in</Link>
+          <Link href="/signup" className="btn btn-primary">Get started</Link>
         </div>
       </div>
 
@@ -21,8 +22,8 @@ export default function Home() {
           built for landscaping companies that are done wrangling spreadsheets.
         </p>
         <div style={styles.heroActions}>
-          <Link href="/signup" style={styles.primaryBtn}>Start Free</Link>
-          <Link href="/login" style={styles.secondaryBtn}>Sign In</Link>
+          <Link href="/signup" className="btn btn-primary" style={styles.heroBtn}>Start free</Link>
+          <Link href="/login" className="btn btn-secondary" style={styles.heroBtn}>Sign in</Link>
         </div>
 
         <div style={styles.features}>
@@ -31,7 +32,7 @@ export default function Home() {
             { title: 'Jobs', desc: 'Track jobs from scheduled to complete.' },
             { title: 'Equipment', desc: 'Know what equipment is assigned where.' },
           ].map(f => (
-            <div key={f.title} style={styles.featureCard}>
+            <div key={f.title} className="card" style={styles.featureCard}>
               <h3 style={styles.featureTitle}>{f.title}</h3>
               <p style={styles.featureDesc}>{f.desc}</p>
             </div>
@@ -47,48 +48,34 @@ export default function Home() {
 }
 
 const styles = {
-  container: { minHeight: '100vh', background: '#111', color: '#fff', fontFamily: "'Barlow', sans-serif", display: 'flex', flexDirection: 'column' as const },
+  container: { minHeight: '100vh', background: COLORS.bg, color: COLORS.textPrimary, fontFamily: "'Inter', sans-serif", display: 'flex', flexDirection: 'column' as const },
   header: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     padding: '0 2rem', height: '64px',
-    borderBottom: '2px solid #F5C800', background: '#0d0d0d',
+    borderBottom: `1px solid ${COLORS.borderSubtle}`, background: COLORS.sidebarBg,
   },
-  logo: { fontFamily: 'monospace', fontWeight: 900, fontSize: '1.2rem', letterSpacing: '3px', textTransform: 'uppercase' as const, color: '#fff', margin: 0 },
-  accent: { color: '#F5C800' },
+  logo: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.3rem', letterSpacing: '2px', textTransform: 'uppercase' as const, color: COLORS.textPrimary, margin: 0 },
+  accent: { color: COLORS.yellow },
   headerLinks: { display: 'flex', alignItems: 'center', gap: '1.25rem' },
-  loginLink: { color: '#888', textDecoration: 'none', fontSize: '0.85rem', fontFamily: 'monospace' },
-  signupBtn: {
-    background: '#F5C800', color: '#111', textDecoration: 'none',
-    fontFamily: 'monospace', fontSize: '0.72rem', letterSpacing: '1px',
-    textTransform: 'uppercase' as const, fontWeight: 700, padding: '0.55rem 1.1rem',
-  },
+  loginLink: { color: COLORS.textSecondary, textDecoration: 'none', fontSize: '0.85rem' },
   hero: {
     flex: 1, display: 'flex', flexDirection: 'column' as const, alignItems: 'center',
     textAlign: 'center' as const, padding: '5rem 1.5rem 3rem', maxWidth: '900px', margin: '0 auto',
   },
   heroTag: {
-    fontFamily: 'monospace', fontSize: '0.72rem', letterSpacing: '3px', color: '#F5C800',
+    fontFamily: "'Inconsolata', monospace", fontSize: '0.72rem', letterSpacing: '3px', color: COLORS.primary,
     marginBottom: '1.25rem',
   },
-  heroTitle: { fontSize: '2.6rem', lineHeight: 1.15, fontWeight: 800, margin: '0 0 1.25rem' },
-  heroSub: { color: '#999', fontSize: '1.05rem', lineHeight: 1.6, maxWidth: '560px', margin: '0 0 2.25rem' },
+  heroTitle: { fontFamily: FONT_COND, fontWeight: 700, fontSize: '2.8rem', lineHeight: 1.15, margin: '0 0 1.25rem' },
+  heroSub: { color: COLORS.textSecondary, fontSize: '1.05rem', lineHeight: 1.6, maxWidth: '560px', margin: '0 0 2.25rem' },
   heroActions: { display: 'flex', gap: '1rem', marginBottom: '4rem' },
-  primaryBtn: {
-    background: '#F5C800', color: '#111', textDecoration: 'none',
-    fontFamily: 'monospace', fontSize: '0.8rem', letterSpacing: '1px',
-    textTransform: 'uppercase' as const, fontWeight: 700, padding: '0.85rem 1.75rem',
-  },
-  secondaryBtn: {
-    background: 'transparent', color: '#fff', textDecoration: 'none', border: '1px solid #333',
-    fontFamily: 'monospace', fontSize: '0.8rem', letterSpacing: '1px',
-    textTransform: 'uppercase' as const, fontWeight: 700, padding: '0.85rem 1.75rem',
-  },
-  features: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: '#2a2a2a', width: '100%' },
-  featureCard: { background: '#1a1a1a', padding: '1.75rem 1.5rem', textAlign: 'left' as const },
-  featureTitle: { fontFamily: 'monospace', fontSize: '0.75rem', letterSpacing: '2px', textTransform: 'uppercase' as const, color: '#F5C800', margin: '0 0 0.5rem' },
-  featureDesc: { color: '#888', fontSize: '0.85rem', lineHeight: 1.5, margin: 0 },
+  heroBtn: { padding: '0.85rem 1.75rem', fontSize: '0.95rem' },
+  features: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', width: '100%' },
+  featureCard: { padding: '20px', textAlign: 'left' as const },
+  featureTitle: { fontSize: '0.95rem', fontWeight: 700, color: COLORS.textPrimary, margin: '0 0 0.5rem' },
+  featureDesc: { color: COLORS.textSecondary, fontSize: '0.85rem', lineHeight: 1.5, margin: 0 },
   footer: {
-    borderTop: '1px solid #2a2a2a', padding: '1.5rem 2rem', textAlign: 'center' as const,
-    color: '#555', fontSize: '0.78rem', fontFamily: 'monospace',
+    borderTop: `1px solid ${COLORS.borderSubtle}`, padding: '1.5rem 2rem', textAlign: 'center' as const,
+    color: COLORS.textMuted, fontSize: '0.78rem',
   },
 }

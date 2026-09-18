@@ -36,13 +36,13 @@ export default function WeekView({ jobs, availability, bookings, equipment, work
             <div style={styles.colHeader}>
               <div style={styles.dowLabel}>{date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
               <div style={{ ...styles.dateLabel, ...(isToday ? styles.dateLabelToday : {}) }}>{date.getDate()}</div>
-              {override && <span style={styles.overrideTag}>{override === 'workday' ? 'WORK' : 'OFF'}</span>}
+              {override && <span style={styles.overrideTag}>{override === 'workday' ? 'Work' : 'Off'}</span>}
             </div>
 
             {blocks.length > 0 && (
               <div style={styles.blockTags}>
                 {blocks.map(b => (
-                  <span key={b.id} style={{ ...styles.blockTag, background: `${crewColor(b.crew)}26`, color: crewColor(b.crew), borderColor: crewColor(b.crew) }}>
+                  <span key={b.id} style={{ ...styles.blockTag, background: `${crewColor(b.crew)}26`, color: crewColor(b.crew) }}>
                     {b.crew?.name || 'Crew'} out{b.reason ? ` — ${b.reason}` : ''}
                   </span>
                 ))}
@@ -55,11 +55,13 @@ export default function WeekView({ jobs, availability, bookings, equipment, work
                 <div
                   key={job.id}
                   draggable
+                  className="job-pill"
                   onDragStart={(e) => { e.stopPropagation(); onJobDragStart(job.id) }}
                   onDragEnd={onJobDragEnd}
                   onClick={(e) => { e.stopPropagation(); onJobClick(job) }}
                   style={{
                     ...styles.card,
+                    background: `${crewColor(job.crew)}1f`,
                     borderLeft: `3px solid ${crewColor(job.crew)}`,
                     opacity: draggingJobId === job.id ? 0.4 : 1,
                   }}
@@ -83,22 +85,22 @@ export default function WeekView({ jobs, availability, bookings, equipment, work
 }
 
 const styles = {
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px', background: COLORS.border, minHeight: '60vh' },
-  col: { background: COLORS.black, padding: '0.6rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', cursor: 'pointer' },
-  colToday: { background: '#1a1600' },
-  colWeekend: { background: '#0a0a0d' },
-  colHeader: { display: 'flex', alignItems: 'baseline', gap: '0.4rem', borderBottom: `1px solid ${COLORS.border}`, paddingBottom: '0.4rem' },
-  dowLabel: { fontFamily: FONT_MONO, fontSize: '0.62rem', letterSpacing: '1px', textTransform: 'uppercase', color: COLORS.mid },
-  dateLabel: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.3rem', color: '#fff' },
-  dateLabelToday: { color: COLORS.yellow },
-  overrideTag: { fontFamily: FONT_MONO, fontSize: '0.55rem', letterSpacing: '1px', color: COLORS.orange, border: `1px solid ${COLORS.orange}`, padding: '0px 3px', marginLeft: 'auto' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px', background: COLORS.borderSubtle, minHeight: '60vh', borderRadius: '8px', overflow: 'hidden' },
+  col: { background: COLORS.bg, padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer' },
+  colToday: { background: COLORS.primarySubtle },
+  colWeekend: { background: COLORS.sidebarBg },
+  colHeader: { display: 'flex', alignItems: 'baseline', gap: '8px', borderBottom: `1px solid ${COLORS.borderSubtle}`, paddingBottom: '8px' },
+  dowLabel: { fontFamily: FONT_MONO, fontSize: '0.62rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: COLORS.textMuted },
+  dateLabel: { fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '1.2rem', color: COLORS.textSecondary },
+  dateLabelToday: { color: COLORS.primary },
+  overrideTag: { fontFamily: FONT_MONO, fontSize: '0.55rem', letterSpacing: '0.05em', color: COLORS.yellow, border: `1px solid ${COLORS.yellow}`, borderRadius: '4px', padding: '0px 4px', marginLeft: 'auto' },
   blockTags: { display: 'flex', flexDirection: 'column', gap: '2px' },
-  blockTag: { fontFamily: FONT_MONO, fontSize: '0.58rem', letterSpacing: '0.5px', textTransform: 'uppercase', padding: '2px 4px', border: '1px solid' },
-  jobList: { display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1, overflowY: 'auto' },
-  empty: { fontFamily: FONT_MONO, fontSize: '0.6rem', letterSpacing: '1px', textTransform: 'uppercase', color: '#3a3a3a', textAlign: 'center', padding: '1rem 0' },
-  card: { background: COLORS.cardBg, padding: '0.5rem 0.6rem', cursor: 'pointer' },
-  cardName: { fontFamily: FONT_COND, fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', color: '#eee' },
-  cardCrew: { fontFamily: FONT_MONO, fontSize: '0.62rem', color: COLORS.mid, marginTop: '2px' },
-  pressureWrap: { height: '3px', background: '#222' },
-  pressureBar: { height: '100%', background: COLORS.orange },
+  blockTag: { fontFamily: FONT_MONO, fontSize: '0.58rem', letterSpacing: '0.03em', textTransform: 'uppercase', padding: '2px 5px', borderRadius: '4px' },
+  jobList: { display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, overflowY: 'auto' },
+  empty: { fontFamily: FONT_MONO, fontSize: '0.6rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: COLORS.textMuted, textAlign: 'center', padding: '1rem 0' },
+  card: { padding: '8px 10px', borderRadius: '4px' },
+  cardName: { fontSize: '13px', fontWeight: 600, color: COLORS.textPrimary },
+  cardCrew: { fontFamily: FONT_MONO, fontSize: '0.62rem', color: COLORS.textSecondary, marginTop: '2px' },
+  pressureWrap: { height: '3px', background: COLORS.borderSubtle, borderRadius: '2px' },
+  pressureBar: { height: '100%', background: COLORS.yellow, borderRadius: '2px' },
 }

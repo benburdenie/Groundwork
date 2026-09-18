@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
+import { COLORS, FONT_COND, FONT_MONO, RADIUS } from '../../lib/theme'
+import { Spinner } from '../dashboard/ui'
 
 export default function ResetPassword() {
   const router = useRouter()
@@ -70,9 +72,9 @@ export default function ResetPassword() {
 
             <form onSubmit={handleSubmit}>
               <div style={styles.group}>
-                <label style={styles.label}>New Password</label>
+                <label style={styles.label}>New password</label>
                 <input
-                  style={styles.input}
+                  className="field"
                   type="password"
                   placeholder="Min. 6 characters"
                   value={password}
@@ -82,9 +84,9 @@ export default function ResetPassword() {
                 />
               </div>
               <div style={styles.group}>
-                <label style={styles.label}>Confirm Password</label>
+                <label style={styles.label}>Confirm password</label>
                 <input
-                  style={styles.input}
+                  className="field"
                   type="password"
                   placeholder="Re-enter your new password"
                   value={confirmPassword}
@@ -96,8 +98,9 @@ export default function ResetPassword() {
 
               {error && <div style={styles.error}>{error}</div>}
 
-              <button style={styles.button} type="submit" disabled={loading}>
-                {loading ? 'Updating...' : 'Update Password'}
+              <button className="btn btn-primary" style={styles.fullWidthBtn} type="submit" disabled={loading}>
+                {loading && <Spinner />}
+                {loading ? 'Updating…' : 'Update password'}
               </button>
             </form>
           </>
@@ -114,77 +117,57 @@ export default function ResetPassword() {
 const styles = {
   container: {
     minHeight: '100vh',
-    background: '#111',
+    background: COLORS.bg,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontFamily: "'Barlow', sans-serif",
+    fontFamily: "'Inter', sans-serif",
     padding: '1rem',
   },
   card: {
-    background: '#1a1a1a',
-    border: '1px solid #2a2a2a',
-    borderTop: '3px solid #F5C800',
+    background: COLORS.surface,
+    border: `1px solid ${COLORS.border}`,
+    borderTop: `3px solid ${COLORS.yellow}`,
+    borderRadius: RADIUS,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
     padding: '2.5rem',
     width: '100%',
     maxWidth: '440px',
   },
   logo: {
-    fontFamily: 'monospace',
-    fontWeight: 900,
+    fontFamily: FONT_COND,
+    fontWeight: 800,
     fontSize: '1.8rem',
-    letterSpacing: '3px',
+    letterSpacing: '2px',
     textTransform: 'uppercase',
-    color: '#fff',
+    color: COLORS.textPrimary,
     marginBottom: '1.5rem',
     textAlign: 'center',
   },
-  accent: { color: '#F5C800' },
-  heading: { color: '#fff', fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.35rem' },
-  sub: { color: '#888', fontSize: '0.85rem', marginBottom: '1.75rem' },
-  group: { marginBottom: '1rem' },
+  accent: { color: COLORS.yellow },
+  heading: { color: COLORS.textPrimary, fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.35rem' },
+  sub: { color: COLORS.textSecondary, fontSize: '0.85rem', marginBottom: '1.75rem' },
+  group: { marginBottom: '16px' },
   label: {
     display: 'block',
-    fontSize: '0.7rem',
-    letterSpacing: '2px',
+    fontSize: '11px',
+    letterSpacing: '0.08em',
     textTransform: 'uppercase',
-    color: '#888',
-    marginBottom: '0.4rem',
-    fontFamily: 'monospace',
-  },
-  input: {
-    width: '100%',
-    background: '#111',
-    border: '1px solid #333',
-    color: '#fff',
-    padding: '0.6rem 0.75rem',
-    fontSize: '0.9rem',
-    boxSizing: 'border-box',
-    outline: 'none',
+    color: COLORS.textSecondary,
+    marginBottom: '6px',
+    fontWeight: 500,
   },
   error: {
-    background: '#2a0d0d',
-    border: '1px solid #5a1a1a',
-    color: '#e87070',
-    padding: '0.6rem 0.75rem',
+    background: COLORS.dangerSubtle,
+    border: `1px solid ${COLORS.danger}40`,
+    color: COLORS.danger,
+    padding: '10px 14px',
     fontSize: '0.82rem',
-    marginBottom: '1rem',
-    fontFamily: 'monospace',
+    marginBottom: '16px',
+    borderRadius: '6px',
+    fontFamily: FONT_MONO,
   },
-  button: {
-    width: '100%',
-    background: '#F5C800',
-    color: '#111',
-    border: 'none',
-    padding: '0.75rem',
-    fontSize: '0.85rem',
-    fontWeight: 700,
-    letterSpacing: '2px',
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-    marginTop: '0.5rem',
-    fontFamily: 'monospace',
-  },
-  footer: { color: '#555', fontSize: '0.8rem', textAlign: 'center', marginTop: '1.5rem' },
-  link: { color: '#F5C800', textDecoration: 'none' },
+  fullWidthBtn: { width: '100%' },
+  footer: { color: COLORS.textMuted, fontSize: '0.8rem', textAlign: 'center', marginTop: '1.5rem' },
+  link: { color: COLORS.primary, textDecoration: 'none' },
 }

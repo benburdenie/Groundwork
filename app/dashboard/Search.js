@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Search as SearchIcon } from 'lucide-react'
 import { apiGet } from '../../lib/api'
-import { COLORS, FONT_MONO } from '../../lib/theme'
+import { COLORS, FONT_MONO, RADIUS } from '../../lib/theme'
 
 export default function Search() {
   const router = useRouter()
@@ -89,9 +90,11 @@ export default function Search() {
 
   return (
     <div style={styles.container} ref={containerRef}>
+      <SearchIcon size={15} color={COLORS.textMuted} style={styles.icon} />
       <input
         style={styles.input}
-        placeholder="Search jobs, crews, equipment, workers..."
+        className="field"
+        placeholder="Search jobs, crews, equipment, workers…"
         value={query}
         onChange={handleChange}
         onFocus={handleFocus}
@@ -127,19 +130,18 @@ export default function Search() {
 }
 
 const styles = {
-  container: { position: 'relative', flex: 1, maxWidth: '360px' },
-  input: {
-    width: '100%', background: '#0a0a0a', border: `1px solid ${COLORS.border}`, color: '#fff',
-    padding: '0.4rem 0.7rem', fontSize: '0.8rem', boxSizing: 'border-box', outline: 'none',
-  },
+  container: { position: 'relative', width: '280px' },
+  icon: { position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' },
+  input: { borderRadius: '20px', padding: '8px 14px 8px 34px', fontSize: '13px' },
   dropdown: {
-    position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
-    background: COLORS.cardBg, border: `1px solid ${COLORS.border}`, maxHeight: '360px', overflowY: 'auto', zIndex: 600,
+    position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
+    background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: RADIUS,
+    maxHeight: '360px', overflowY: 'auto', zIndex: 600, boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
   },
-  empty: { padding: '0.75rem', fontSize: '0.8rem', color: '#555' },
-  groupLabel: { fontFamily: FONT_MONO, fontSize: '0.58rem', letterSpacing: '2px', textTransform: 'uppercase', color: COLORS.yellow, padding: '0.5rem 0.75rem 0.25rem' },
-  item: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'transparent', border: 'none', textAlign: 'left', padding: '0.4rem 0.75rem', cursor: 'pointer', color: '#eee', fontSize: '0.82rem' },
-  itemActive: { background: '#242200' },
-  itemLabel: { fontWeight: 600 },
-  itemSub: { color: '#666', fontSize: '0.72rem', marginLeft: '0.75rem' },
+  empty: { padding: '0.75rem', fontSize: '0.8rem', color: COLORS.textMuted },
+  groupLabel: { fontFamily: FONT_MONO, fontSize: '0.58rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.primary, padding: '10px 14px 4px' },
+  item: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'transparent', border: 'none', textAlign: 'left', padding: '8px 14px', cursor: 'pointer', color: COLORS.textPrimary, fontSize: '0.82rem', borderRadius: '6px' },
+  itemActive: { background: COLORS.surfaceRaised },
+  itemLabel: { fontWeight: 500 },
+  itemSub: { color: COLORS.textMuted, fontSize: '0.72rem', marginLeft: '0.75rem' },
 }

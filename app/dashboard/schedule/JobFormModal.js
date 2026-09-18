@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { COLORS, FONT_COND, shared } from '../../../lib/theme'
+import { COLORS, FONT_COND, RADIUS, shared } from '../../../lib/theme'
 import { computeEndDate, countWorkDays } from '../../../lib/workdays'
 import { checkJobConflicts } from '../../../lib/conflicts'
+import { Spinner } from '../ui'
 
 function emptyForm(defaults = {}) {
   return {
@@ -78,67 +79,71 @@ export default function JobFormModal({ editingJob, crews, equipment, jobs, avail
     onSubmit({ ...rest, crew_id: rest.crew_id || null, duration_days: duration ? parseInt(duration, 10) : null })
   }
 
+  const crewConflicts = conflicts.filter(c => c.field === 'crew')
+  const equipmentConflicts = conflicts.filter(c => c.field === 'equipment')
+
   return (
-    <div style={styles.overlay} onClick={onClose}>
-      <form style={styles.modal} onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
-        <h3 style={styles.modalTitle}>{editingJob ? 'Edit Job' : 'New Job'}</h3>
+    <div className="modal-backdrop" style={styles.overlay} onClick={onClose}>
+      <form className="modal-panel" style={styles.modal} onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
+        <h3 style={styles.modalTitle}>{editingJob ? 'Edit job' : 'New job'}</h3>
 
         <div style={shared.group}>
-          <label style={shared.label}>Job Name</label>
-          <input style={shared.input} name="name" value={formData.name} onChange={handleChange} required />
+          <label style={shared.label}>Job name</label>
+          <input className="field" name="name" value={formData.name} onChange={handleChange} required />
         </div>
 
         <div style={shared.formRow}>
           <div style={shared.group}>
-            <label style={shared.label}>Start Date</label>
-            <input style={shared.input} name="start_date" type="date" value={formData.start_date} onChange={handleChange} />
+            <label style={shared.label}>Start date</label>
+            <input className="field" name="start_date" type="date" value={formData.start_date} onChange={handleChange} />
           </div>
           <div style={shared.group}>
             <label style={shared.label}>Duration (work days)</label>
-            <input style={shared.input} name="duration" type="number" min="1" value={formData.duration} onChange={handleChange} />
+            <input className="field" name="duration" type="number" min="1" value={formData.duration} onChange={handleChange} />
           </div>
         </div>
 
         <div style={shared.group}>
-          <label style={shared.label}>End Date</label>
-          <input style={shared.input} name="end_date" type="date" value={formData.end_date} onChange={handleChange} />
+          <label style={shared.label}>End date</label>
+          <input className="field" name="end_date" type="date" value={formData.end_date} onChange={handleChange} />
         </div>
 
         <div style={shared.formRow}>
           <div style={shared.group}>
             <label style={shared.label}>Address</label>
-            <input style={shared.input} name="address" value={formData.address} onChange={handleChange} />
+            <input className="field" name="address" value={formData.address} onChange={handleChange} />
           </div>
           <div style={shared.group}>
             <label style={shared.label}>City</label>
-            <input style={shared.input} name="city" value={formData.city} onChange={handleChange} />
+            <input className="field" name="city" value={formData.city} onChange={handleChange} />
           </div>
         </div>
 
         <div style={shared.formRow}>
           <div style={shared.group}>
-            <label style={shared.label}>Client Name</label>
-            <input style={shared.input} name="client_name" value={formData.client_name} onChange={handleChange} />
+            <label style={shared.label}>Client name</label>
+            <input className="field" name="client_name" value={formData.client_name} onChange={handleChange} />
           </div>
           <div style={shared.group}>
-            <label style={shared.label}>Client Phone</label>
-            <input style={shared.input} name="client_phone" value={formData.client_phone} onChange={handleChange} />
+            <label style={shared.label}>Client phone</label>
+            <input className="field" name="client_phone" value={formData.client_phone} onChange={handleChange} />
           </div>
         </div>
 
         <div style={shared.formRow}>
           <div style={shared.group}>
             <label style={shared.label}>Crew</label>
-            <select style={shared.select} name="crew_id" value={formData.crew_id} onChange={handleChange}>
+            <select className={`field${crewConflicts.length ? ' field-error' : ''}`} name="crew_id" value={formData.crew_id} onChange={handleChange}>
               <option value="">— No crew —</option>
               {crews.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+            {crewConflicts.map((c, i) => <div key={i} style={shared.fieldError}>{c.message}</div>)}
           </div>
           <div style={shared.group}>
             <label style={shared.label}>Status</label>
-            <select style={shared.select} name="status" value={formData.status} onChange={handleChange}>
-              <option value="notstarted">Not Started</option>
-              <option value="inprogress">In Progress</option>
+            <select className="field" name="status" value={formData.status} onChange={handleChange}>
+              <option value="notstarted">Not started</option>
+              <option value="inprogress">In progress</option>
               <option value="complete">Complete</option>
             </select>
           </div>
@@ -146,7 +151,7 @@ export default function JobFormModal({ editingJob, crews, equipment, jobs, avail
 
         <div style={shared.group}>
           <label style={shared.label}>Equipment</label>
-          <div style={styles.equipList}>
+          <div style={{ ...styles.equipList, ...(equipmentConflicts.length ? styles.equipListError : {}) }}>
             {equipment.length === 0 && <div style={styles.equipEmpty}>No equipment on file</div>}
             {equipment.map(item => (
               <label key={item.id} style={styles.equipRow}>
@@ -155,25 +160,21 @@ export default function JobFormModal({ editingJob, crews, equipment, jobs, avail
               </label>
             ))}
           </div>
+          {equipmentConflicts.map((c, i) => <div key={i} style={shared.fieldError}>{c.message}</div>)}
         </div>
 
         <div style={shared.group}>
           <label style={shared.label}>Notes</label>
-          <textarea style={shared.textarea} name="notes" value={formData.notes} onChange={handleChange} rows={3} />
+          <textarea className="field" name="notes" value={formData.notes} onChange={handleChange} rows={3} />
         </div>
 
-        {conflicts.length > 0 && (
-          <div style={shared.errorBox}>
-            {conflicts.map((c, i) => <div key={i}>{c}</div>)}
-          </div>
-        )}
-
         <div style={styles.modalActions}>
-          {editingJob && <button type="button" style={shared.btnDanger} onClick={() => onDelete(editingJob)}>Delete</button>}
+          {editingJob && <button type="button" className="btn btn-danger" onClick={() => onDelete(editingJob)}>Delete</button>}
           <div style={{ flex: 1 }} />
-          <button type="button" style={shared.btnSecondary} onClick={onClose}>Cancel</button>
-          <button type="submit" style={shared.btnPrimary} disabled={saving || conflicts.length > 0}>
-            {saving ? 'Saving...' : editingJob ? 'Save Changes' : 'Create Job'}
+          <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn btn-primary" disabled={saving || conflicts.length > 0}>
+            {saving && <Spinner />}
+            {saving ? 'Saving…' : editingJob ? 'Save changes' : 'Create job'}
           </button>
         </div>
       </form>
@@ -182,11 +183,12 @@ export default function JobFormModal({ editingJob, crews, equipment, jobs, avail
 }
 
 const styles = {
-  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflowY: 'auto', padding: '3rem 1rem', zIndex: 500 },
-  modal: { background: COLORS.cardBg, border: `1px solid ${COLORS.border}`, borderTop: `3px solid ${COLORS.yellow}`, padding: '1.75rem', width: '100%', maxWidth: '560px' },
-  modalTitle: { fontFamily: FONT_COND, fontSize: '1.3rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: `1px solid ${COLORS.border}` },
-  modalActions: { display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.25rem', paddingTop: '1rem', borderTop: `1px solid ${COLORS.border}` },
-  equipList: { display: 'flex', flexDirection: 'column', gap: '0.35rem', maxHeight: '160px', overflowY: 'auto', border: '1px solid #333', padding: '0.6rem 0.75rem' },
-  equipRow: { display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', cursor: 'pointer' },
-  equipEmpty: { color: '#555', fontSize: '0.8rem' },
+  overlay: { alignItems: 'flex-start', justifyContent: 'center', overflowY: 'auto' },
+  modal: { background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: '12px', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', padding: '28px', width: '100%', maxWidth: '560px', margin: '3rem 1rem' },
+  modalTitle: { fontFamily: FONT_COND, fontSize: '1.3rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '20px', paddingBottom: '16px', borderBottom: `1px solid ${COLORS.borderSubtle}`, color: COLORS.textPrimary },
+  modalActions: { display: 'flex', alignItems: 'center', gap: '10px', marginTop: '20px', paddingTop: '16px', borderTop: `1px solid ${COLORS.borderSubtle}` },
+  equipList: { display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '160px', overflowY: 'auto', background: COLORS.bg, border: `1px solid ${COLORS.border}`, borderRadius: RADIUS, padding: '10px 14px' },
+  equipListError: { borderColor: COLORS.danger },
+  equipRow: { display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: COLORS.textPrimary, cursor: 'pointer' },
+  equipEmpty: { color: COLORS.textMuted, fontSize: '0.8rem' },
 }

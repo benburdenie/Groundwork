@@ -34,7 +34,7 @@ export async function POST(request) {
 
     const { data, error } = await supabaseAdmin
       .from('crews')
-      .insert({ company_id: companyId, name, foreman_name, color: color || '#F5C800', notes })
+      .insert({ company_id: companyId, name, foreman_name, color: color || '#22c55e', notes })
       .select()
       .single()
 

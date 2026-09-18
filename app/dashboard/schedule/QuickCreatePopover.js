@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { COLORS, FONT_MONO, shared } from '../../../lib/theme'
+import { COLORS, FONT_MONO, RADIUS, shared } from '../../../lib/theme'
+import { Spinner } from '../ui'
 
 export default function QuickCreatePopover({ date, crews, onClose, onCreate, saving }) {
   const [name, setName] = useState('')
@@ -14,24 +15,27 @@ export default function QuickCreatePopover({ date, crews, onClose, onCreate, sav
   }
 
   return (
-    <div style={styles.overlay} onClick={onClose}>
-      <form style={styles.popover} onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
+    <div className="modal-backdrop" style={styles.overlay} onClick={onClose}>
+      <form className="modal-panel" style={styles.popover} onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
         <div style={styles.title}>New job — {date}</div>
         <input
-          style={shared.input}
+          className="field"
           placeholder="Job name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           autoFocus
           required
         />
-        <select style={{ ...shared.select, marginTop: '0.6rem' }} value={crewId} onChange={(e) => setCrewId(e.target.value)}>
+        <select className="field" style={{ marginTop: '10px' }} value={crewId} onChange={(e) => setCrewId(e.target.value)}>
           <option value="">— No crew —</option>
           {crews.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <div style={styles.actions}>
-          <button type="button" style={shared.btnSecondary} onClick={onClose}>Cancel</button>
-          <button type="submit" style={shared.btnPrimary} disabled={saving}>{saving ? 'Creating...' : 'Create'}</button>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn btn-primary" disabled={saving}>
+            {saving && <Spinner />}
+            {saving ? 'Creating…' : 'Create'}
+          </button>
         </div>
       </form>
     </div>
@@ -39,8 +43,8 @@ export default function QuickCreatePopover({ date, crews, onClose, onCreate, sav
 }
 
 const styles = {
-  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 350 },
-  popover: { background: COLORS.cardBg, border: `1px solid ${COLORS.border}`, borderTop: `3px solid ${COLORS.yellow}`, padding: '1.25rem', width: '280px' },
-  title: { fontFamily: FONT_MONO, fontSize: '0.68rem', letterSpacing: '1px', textTransform: 'uppercase', color: COLORS.mid, marginBottom: '0.75rem' },
-  actions: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.9rem' },
+  overlay: { alignItems: 'center', justifyContent: 'center' },
+  popover: { background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: '12px', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', padding: '20px', width: '280px' },
+  title: { fontFamily: FONT_MONO, fontSize: '0.68rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: COLORS.textSecondary, marginBottom: '12px' },
+  actions: { display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' },
 }
