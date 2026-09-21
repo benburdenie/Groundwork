@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CloudRain, CalendarClock, Printer, Plus } from 'lucide-react'
 import { apiGet, apiPost, apiPatch, apiDelete } from '../../../lib/api'
-import { COLORS, FONT_COND, FONT_MONO, RADIUS, shared } from '../../../lib/theme'
+import { COLORS, FONT_COND, RADIUS, shared } from '../../../lib/theme'
 import { buildWorkScheduleMap, computeEndDate } from '../../../lib/workdays'
 import { useJobsContext } from '../JobsContext'
 import { Skeleton } from '../ui'
@@ -86,6 +86,7 @@ function ScheduleContent() {
     const jobId = searchParams.get('job')
     if (jobId && jobs.length > 0) {
       const job = jobs.find(j => j.id === jobId)
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- open the job named in the URL, then clear the param
       if (job) setSelectedJob(job)
       router.replace('/dashboard/schedule')
     }
@@ -374,6 +375,7 @@ function ScheduleContent() {
 
       {editingJob !== undefined && (
         <JobFormModal
+          key={editingJob?.id || 'new'}
           editingJob={editingJob}
           crews={crews}
           equipment={equipment}

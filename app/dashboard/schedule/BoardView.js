@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { COLORS, FONT_COND, FONT_MONO, RADIUS } from '../../../lib/theme'
+import { COLORS, FONT_COND, FONT_MONO } from '../../../lib/theme'
 import { displayStatus, crewColor } from './helpers'
 
 const COLUMNS = [

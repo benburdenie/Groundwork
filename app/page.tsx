@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { COLORS, FONT_COND, RADIUS } from '../lib/theme'
+import { COLORS, FONT_COND } from '../lib/theme'
 
 export default function Home() {
   return (

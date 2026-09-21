@@ -1,6 +1,6 @@
 'use client'
 
-import { COLORS, FONT_COND, FONT_MONO } from '../../../lib/theme'
+import { COLORS, FONT_MONO } from '../../../lib/theme'
 import { fmt, todayStr, jobsForDate, crewBlocksForDate, crewColor, equipmentDeployedOnDate, addDaysToDate } from './helpers'
 
 export default function WeekView({ jobs, availability, bookings, equipment, workSchedule, draggingJobId, onCellClick, onJobClick, onJobDragStart, onJobDragEnd, onDropOnDate }) {

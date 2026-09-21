@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Printer } from 'lucide-react'
 import { apiGet } from '../../../lib/api'
-import { COLORS, FONT_COND, FONT_MONO, RADIUS, shared } from '../../../lib/theme'
+import { COLORS, FONT_COND, FONT_MONO, RADIUS } from '../../../lib/theme'
 import { Skeleton } from '../ui'
 
 function todayStr() {

@@ -53,6 +53,7 @@ function CrewsContent() {
     const crewId = searchParams.get('crew')
     if (crewId && crews.length > 0) {
       const crew = crews.find(c => c.id === crewId)
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- open the crew named in the URL, then clear the param
       if (crew) setViewingCrew(crew)
       router.replace('/dashboard/crews')
     }

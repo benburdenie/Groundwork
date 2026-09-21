@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { COLORS, FONT_COND, shared } from '../../../lib/theme'
 import { Spinner } from '../ui'
 
-export default function EquipmentDurationModal({ job, equipmentId, equipmentName, saving, onClose, onPermanent, onThisJob, onPickDates }) {
+export default function EquipmentDurationModal({ job, equipmentName, saving, onClose, onPermanent, onThisJob, onPickDates }) {
   const [mode, setMode] = useState(null)
   const [start, setStart] = useState(job.start_date || '')
   const [end, setEnd] = useState(job.end_date || '')

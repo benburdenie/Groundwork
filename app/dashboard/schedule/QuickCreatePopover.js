@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { COLORS, FONT_MONO, RADIUS, shared } from '../../../lib/theme'
+import { COLORS, FONT_MONO } from '../../../lib/theme'
 import { Spinner } from '../ui'
 
 export default function QuickCreatePopover({ date, crews, onClose, onCreate, saving }) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { COLORS, FONT_COND, FONT_MONO } from '../../../lib/theme'
+import { COLORS, FONT_MONO } from '../../../lib/theme'
 import { fmt, todayStr, jobsForDate, crewBlocksForDate, crewColor, equipmentDeployedOnDate } from './helpers'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']

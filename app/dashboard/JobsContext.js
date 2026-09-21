@@ -13,6 +13,7 @@ export function JobsProvider({ children }) {
     if (!res.error) setJobs(res.jobs || [])
   }, [])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data fetch
   useEffect(() => { refreshJobs() }, [refreshJobs])
 
   return (

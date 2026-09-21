@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { COLORS, FONT_COND, RADIUS, shared } from '../../../lib/theme'
 import { computeEndDate, countWorkDays } from '../../../lib/workdays'
 import { checkJobConflicts } from '../../../lib/conflicts'
@@ -15,17 +15,23 @@ function emptyForm(defaults = {}) {
   }
 }
 
+function formFromJob(job) {
+  return {
+    name: job.name || '', address: job.address || '', city: job.city || '',
+    client_name: job.client_name || '', client_phone: job.client_phone || '', client_email: job.client_email || '',
+    start_date: job.start_date || '', end_date: job.end_date || '',
+    duration: job.duration_days || '', crew_id: job.crew_id || '', notes: job.notes || '',
+    status: job.status || 'notstarted',
+    equipment_ids: (job.job_equipment || []).map(je => je.equipment_id),
+  }
+}
+
 export default function JobFormModal({ editingJob, crews, equipment, jobs, availability, bookings, workSchedule, saving, onClose, onSubmit, onDelete }) {
   const [formData, setFormData] = useState(() => editingJob ? formFromJob(editingJob) : emptyForm())
-  const [conflicts, setConflicts] = useState([])
 
-  useEffect(() => {
-    setFormData(editingJob ? formFromJob(editingJob) : emptyForm())
-  }, [editingJob])
-
-  useEffect(() => {
+  const conflicts = useMemo(() => {
     const equipmentNames = new Map(equipment.map(e => [e.id, e.name]))
-    setConflicts(checkJobConflicts({
+    return checkJobConflicts({
       jobId: editingJob?.id || null,
       crewId: formData.crew_id || null,
       equipmentIds: formData.equipment_ids,
@@ -33,19 +39,8 @@ export default function JobFormModal({ editingJob, crews, equipment, jobs, avail
       endDate: formData.end_date,
       jobs, availability,
       bookings: { list: bookings, equipmentNames },
-    }))
+    })
   }, [formData.crew_id, formData.equipment_ids, formData.start_date, formData.end_date, jobs, availability, bookings, equipment, editingJob])
-
-  function formFromJob(job) {
-    return {
-      name: job.name || '', address: job.address || '', city: job.city || '',
-      client_name: job.client_name || '', client_phone: job.client_phone || '', client_email: job.client_email || '',
-      start_date: job.start_date || '', end_date: job.end_date || '',
-      duration: job.duration_days || '', crew_id: job.crew_id || '', notes: job.notes || '',
-      status: job.status || 'notstarted',
-      equipment_ids: (job.job_equipment || []).map(je => je.equipment_id),
-    }
-  }
 
   const handleChange = (e) => {
     const { name, value } = e.target

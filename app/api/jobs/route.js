@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin, getCompanyId } from '../../../lib/serverAuth'
+import { supabaseAdmin, getCompanyId, allOwnedByCompany } from '../../../lib/serverAuth'
 import { buildWorkScheduleMap, computeEndDate, countWorkDays } from '../../../lib/workdays'
+
+// Columns a client may set on a job. company_id, is_active, etc. are never
+// taken from the request body.
+const EDITABLE_FIELDS = [
+  'name', 'address', 'city', 'client_name', 'client_phone', 'client_email',
+  'start_date', 'end_date', 'crew_id', 'notes', 'status',
+]
 
 const JOB_SELECT = '*, crew:crews(id, name, color), job_equipment(equipment_id, equipment(id, name, category))'
 
@@ -72,6 +79,13 @@ export async function POST(request) {
 
     if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
 
+    if (!(await allOwnedByCompany('crews', [crew_id], companyId))) {
+      return NextResponse.json({ error: 'Crew not found' }, { status: 404 })
+    }
+    if (!(await allOwnedByCompany('equipment', equipment_ids, companyId))) {
+      return NextResponse.json({ error: 'Equipment not found' }, { status: 404 })
+    }
+
     const workSchedule = await getWorkSchedule(companyId)
     const resolved = resolveDatesAndDuration({ start_date, end_date, duration_days }, workSchedule)
 
@@ -109,7 +123,7 @@ export async function PATCH(request) {
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await request.json()
-    const { id, equipment_ids, duration_days, ...fields } = body
+    const { id, equipment_ids, duration_days } = body
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
     const { data: existing, error: existError } = await supabaseAdmin
@@ -121,8 +135,18 @@ export async function PATCH(request) {
     if (existError) throw existError
     if (!existing) return NextResponse.json({ error: 'Job not found' }, { status: 404 })
 
-    const update = { ...fields }
+    const update = {}
+    for (const key of EDITABLE_FIELDS) {
+      if (key in body) update[key] = body[key]
+    }
     if ('crew_id' in update) update.crew_id = update.crew_id || null
+
+    if (!(await allOwnedByCompany('crews', [update.crew_id], companyId))) {
+      return NextResponse.json({ error: 'Crew not found' }, { status: 404 })
+    }
+    if (!(await allOwnedByCompany('equipment', equipment_ids, companyId))) {
+      return NextResponse.json({ error: 'Equipment not found' }, { status: 404 })
+    }
 
     if ('start_date' in update || 'end_date' in update || duration_days !== undefined) {
       const workSchedule = await getWorkSchedule(companyId)

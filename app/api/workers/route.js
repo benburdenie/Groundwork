@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin, getCompanyId } from '../../../lib/serverAuth'
+import { supabaseAdmin, getCompanyId, allOwnedByCompany } from '../../../lib/serverAuth'
 
 // GET — fetch all workers for this company
 export async function GET(request) {
@@ -31,6 +31,9 @@ export async function POST(request) {
     const { name, role, phone, email, crew_id, notes } = body
 
     if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    if (!(await allOwnedByCompany('crews', [crew_id], companyId))) {
+      return NextResponse.json({ error: 'Crew not found' }, { status: 404 })
+    }
 
     const { data, error } = await supabaseAdmin
       .from('workers')
@@ -57,6 +60,9 @@ export async function PATCH(request) {
     const { id, name, role, phone, email, crew_id, notes } = await request.json()
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
     if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    if (!(await allOwnedByCompany('crews', [crew_id], companyId))) {
+      return NextResponse.json({ error: 'Crew not found' }, { status: 404 })
+    }
 
     const { data, error } = await supabaseAdmin
       .from('workers')
