@@ -8,7 +8,7 @@ import { apiGet, apiPost, apiPatch, apiDelete } from '../../../lib/api'
 import { COLORS, FONT_COND, RADIUS, shared } from '../../../lib/theme'
 import { buildWorkScheduleMap, computeEndDate } from '../../../lib/workdays'
 import { useJobsContext } from '../JobsContext'
-import { Skeleton } from '../ui'
+import { Skeleton, Toast } from '../ui'
 import MonthView from './MonthView'
 import WeekView from './WeekView'
 import BoardView from './BoardView'
@@ -49,6 +49,7 @@ function ScheduleContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [formError, setFormError] = useState(null) // shown inline in JobFormModal, not the page banner
+  const [toast, setToast] = useState(null) // prominent, self-dismissing — for errors behind a modal that's closing
   const [busy, setBusy] = useState(false)
 
   const [cursor, setCursor] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
@@ -199,7 +200,7 @@ function ScheduleContent() {
 
   const handleDropCrewOnJob = async (jobId, crewId) => {
     const res = await apiPatch('/api/jobs', { id: jobId, crew_id: crewId })
-    if (res.error) { setError(res.error); return }
+    if (res.error) { setToast(res.error); return }
     await refreshAll()
   }
 
@@ -213,12 +214,16 @@ function ScheduleContent() {
   const handleEquipPermanent = async () => {
     if (!equipDropTarget) return
     setBusy(true)
-    await apiPost('/api/perm-equipment', { crew_id: equipDropTarget.job.crew_id, equipment_id: equipDropTarget.equipmentId })
+    const res = await apiPost('/api/perm-equipment', { crew_id: equipDropTarget.job.crew_id, equipment_id: equipDropTarget.equipmentId })
     setBusy(false)
     setEquipDropTarget(null)
+    if (res.error) { setToast(res.error); return }
     await refreshAll()
   }
 
+  // On a conflict, the duration-picker modal closes right away rather than
+  // sitting open with the error hidden behind it — the toast is what tells
+  // the user what happened.
   const handleEquipThisJob = async () => {
     if (!equipDropTarget) return
     setBusy(true)
@@ -227,8 +232,8 @@ function ScheduleContent() {
       start_date: equipDropTarget.job.start_date, end_date: equipDropTarget.job.end_date,
     })
     setBusy(false)
-    if (res.error) { setError(res.error); return }
     setEquipDropTarget(null)
+    if (res.error) { setToast(res.error); return }
     await refreshAll()
   }
 
@@ -240,8 +245,8 @@ function ScheduleContent() {
       start_date: start, end_date: end,
     })
     setBusy(false)
-    if (res.error) { setError(res.error); return }
     setEquipDropTarget(null)
+    if (res.error) { setToast(res.error); return }
     await refreshAll()
   }
 
@@ -414,6 +419,8 @@ function ScheduleContent() {
           job={equipDropTarget.job}
           equipmentId={equipDropTarget.equipmentId}
           equipmentName={equipDropTarget.equipmentName}
+          jobs={jobs}
+          bookings={bookings}
           saving={busy}
           onClose={closeEquipModal}
           onPermanent={handleEquipPermanent}
@@ -424,6 +431,8 @@ function ScheduleContent() {
 
       {rainDayOpen && <RainDayModal saving={busy} onClose={() => setRainDayOpen(false)} onConfirm={handleRainDay} />}
       {workDayOpen && <WorkDayModal saving={busy} onClose={() => setWorkDayOpen(false)} onConfirm={handleWorkDay} />}
+
+      <Toast message={toast} onClose={() => setToast(null)} />
     </div>
   )
 }

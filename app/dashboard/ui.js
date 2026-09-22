@@ -1,6 +1,8 @@
 'use client'
 
-import { COLORS, FONT_COND, RADIUS } from '../../lib/theme'
+import { useEffect } from 'react'
+import { AlertTriangle, X } from 'lucide-react'
+import { COLORS, FONT_COND, FONT_BODY, RADIUS } from '../../lib/theme'
 
 export function Spinner({ style }) {
   return <span className="spinner" style={style} />
@@ -30,6 +32,29 @@ export function SkeletonGrid({ count = 6 }) {
   )
 }
 
+// A prominent, self-dismissing notification for errors that happen behind a
+// modal that's about to close (a 409 conflict on an assignment action, say) —
+// unlike the page's inline error banner, this can't end up hidden behind
+// whatever overlay was open when the error occurred.
+export function Toast({ message, onClose, durationMs = 6000 }) {
+  useEffect(() => {
+    if (!message) return
+    const timer = setTimeout(onClose, durationMs)
+    return () => clearTimeout(timer)
+  }, [message, onClose, durationMs])
+
+  if (!message) return null
+  return (
+    <div style={toastStyles.wrap} role="alert">
+      <AlertTriangle size={16} color={COLORS.danger} style={{ flexShrink: 0 }} />
+      <span style={toastStyles.text}>{message}</span>
+      <button style={toastStyles.close} onClick={onClose} aria-label="Dismiss">
+        <X size={14} />
+      </button>
+    </div>
+  )
+}
+
 export function EmptyState({ icon: Icon, title, subtitle, actionLabel, onAction }) {
   return (
     <div style={styles.wrap}>
@@ -45,6 +70,17 @@ export function EmptyState({ icon: Icon, title, subtitle, actionLabel, onAction 
       )}
     </div>
   )
+}
+
+const toastStyles = {
+  wrap: {
+    position: 'fixed', top: '24px', left: '50%', transform: 'translateX(-50%)', zIndex: 900,
+    display: 'flex', alignItems: 'center', gap: '10px', maxWidth: '90vw',
+    background: COLORS.surfaceRaised, border: `1px solid ${COLORS.danger}`, borderRadius: RADIUS,
+    padding: '12px 16px', boxShadow: '0 12px 32px rgba(0,0,0,0.45)',
+  },
+  text: { fontFamily: FONT_BODY, fontSize: '0.85rem', color: COLORS.textPrimary },
+  close: { background: 'transparent', border: 'none', color: COLORS.textMuted, cursor: 'pointer', display: 'flex', flexShrink: 0, marginLeft: '4px' },
 }
 
 const styles = {
