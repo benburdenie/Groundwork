@@ -54,31 +54,31 @@ export default function DashboardLayout({ children }) {
   return (
     <JobsProvider>
       <div style={styles.appShell}>
-        <nav style={styles.sidebar} className="print-hide">
-          <div style={styles.logoArea}>
-            <div style={styles.logoBar} />
-            <span style={styles.logoText}>Ground<span style={styles.accent}>Work</span></span>
+        <header style={styles.topbar} className="print-hide">
+          <div style={styles.topbarLeft}>
+            <div style={styles.logoArea}>
+              <div style={styles.logoBar} />
+              <span style={styles.logoText}>Ground<span style={styles.accent}>Work</span></span>
+            </div>
+            <nav style={styles.navTabs}>
+              {NAV_ITEMS.map(item => {
+                const active = pathname.startsWith(item.href)
+                const Icon = item.icon
+                return (
+                  <button
+                    key={item.href}
+                    onClick={() => router.push(item.href)}
+                    className={`nav-item${active ? ' active' : ''}`}
+                  >
+                    <Icon size={16} strokeWidth={2} />
+                    {item.label}
+                  </button>
+                )
+              })}
+            </nav>
           </div>
-          <div style={styles.sidebarBody}>
-            {NAV_ITEMS.map(item => {
-              const active = pathname.startsWith(item.href)
-              const Icon = item.icon
-              return (
-                <button
-                  key={item.href}
-                  onClick={() => router.push(item.href)}
-                  className={`nav-item${active ? ' active' : ''}`}
-                >
-                  <Icon size={17} strokeWidth={2} />
-                  {item.label}
-                </button>
-              )
-            })}
-          </div>
-        </nav>
 
-        <div style={styles.contentColumn}>
-          <header style={styles.header} className="print-hide">
+          <div style={styles.topbarRight}>
             <Search />
             <div style={styles.headerRight}>
               {company?.name && <span style={styles.companyName}>{company.name}</span>}
@@ -88,47 +88,41 @@ export default function DashboardLayout({ children }) {
                 Sign out
               </button>
             </div>
-          </header>
+          </div>
+        </header>
 
-          <div className="print-hide"><OverdueBanner /></div>
+        <div className="print-hide"><OverdueBanner /></div>
 
-          <main style={styles.main}>
-            {children}
-          </main>
-        </div>
+        <main style={styles.main}>
+          {children}
+        </main>
       </div>
     </JobsProvider>
   )
 }
 
 const styles = {
-  appShell: { minHeight: '100vh', background: COLORS.bg, color: COLORS.textPrimary, display: 'flex' },
+  appShell: { minHeight: '100vh', background: COLORS.bg, color: COLORS.textPrimary, display: 'flex', flexDirection: 'column' },
   loadingFull: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: COLORS.textMuted, fontFamily: FONT_MONO, letterSpacing: '2px', width: '100%' },
 
-  sidebar: {
-    width: '220px', minWidth: '220px', flexShrink: 0, height: '100vh', position: 'sticky', top: 0,
-    background: COLORS.sidebarBg, borderRight: `1px solid ${COLORS.borderSubtle}`,
-    display: 'flex', flexDirection: 'column',
+  topbar: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem',
+    padding: '0 24px', height: '60px', flexShrink: 0, flexWrap: 'wrap',
+    background: COLORS.sidebarBg, borderBottom: `1px solid ${COLORS.borderSubtle}`,
+    position: 'sticky', top: 0, zIndex: 400,
   },
-  logoArea: {
-    height: '64px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '10px',
-    padding: '0 20px', borderBottom: `1px solid ${COLORS.borderSubtle}`,
-  },
+  topbarLeft: { display: 'flex', alignItems: 'center', gap: '28px', minWidth: 0 },
+  logoArea: { display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 },
   logoBar: { width: '4px', height: '22px', background: COLORS.yellow, borderRadius: '2px' },
   logoText: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.2rem', letterSpacing: '1.5px', textTransform: 'uppercase', lineHeight: 1, color: COLORS.textPrimary },
   accent: { color: COLORS.yellow },
 
-  sidebarBody: { flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto' },
+  navTabs: { display: 'flex', alignItems: 'center', gap: '4px', height: '100%' },
 
-  contentColumn: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: '100vh' },
-  header: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem',
-    padding: '0 24px', height: '56px', flexShrink: 0,
-    background: COLORS.sidebarBg, borderBottom: `1px solid ${COLORS.borderSubtle}`,
-  },
+  topbarRight: { display: 'flex', alignItems: 'center', gap: '1.25rem', flexShrink: 0, marginLeft: 'auto' },
   headerRight: { display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 },
   companyName: { fontFamily: FONT_MONO, fontSize: '0.7rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: COLORS.textSecondary },
   userEmail: { fontFamily: FONT_MONO, fontSize: '0.68rem', color: COLORS.textMuted, display: 'none' },
 
-  main: { flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 32px 48px' },
+  main: { flex: 1, minWidth: 0, padding: '32px 32px 48px' },
 }

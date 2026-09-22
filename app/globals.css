@@ -147,34 +147,29 @@ textarea.field {
   transform: translateY(-1px);
 }
 
-/* ---------- Sidebar nav ---------- */
+/* ---------- Top bar nav ---------- */
 .nav-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  width: 100%;
-  text-align: left;
+  gap: 8px;
   background: transparent;
   border: none;
-  border-left: 3px solid transparent;
+  border-bottom: 2px solid transparent;
   color: var(--text-secondary);
   font-family: 'Inter', sans-serif;
   font-weight: 500;
   font-size: 14px;
-  padding: 12px;
-  height: 36px;
-  border-radius: 8px;
+  padding: 0 4px;
+  height: 100%;
   cursor: pointer;
   transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
 }
 .nav-item:hover {
-  background: var(--surface-raised);
   color: var(--text-primary);
 }
 .nav-item.active {
-  background: transparent;
   color: var(--text-primary);
-  border-left-color: var(--primary);
+  border-bottom-color: var(--primary);
 }
 
 /* ---------- List rows ---------- */

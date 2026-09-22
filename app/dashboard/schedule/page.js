@@ -295,10 +295,9 @@ function ScheduleContent() {
         </div>
       )}
 
-      <div style={{ ...styles.layout, alignItems: view === 'month' ? 'stretch' : 'flex-start' }}>
+      <div style={styles.main}>
         {showSidebar && (
           <UnscheduledSidebar
-            fill={view === 'month'}
             jobs={jobs}
             draggingJobId={draggingJobId}
             onJobDragStart={setDraggingJobId}
@@ -307,56 +306,53 @@ function ScheduleContent() {
             onJobClick={openJob}
           />
         )}
-
-        <div style={styles.main}>
-          {view === 'month' && (
-            <MonthView
-              cursor={cursor}
-              jobs={jobs}
-              availability={availability}
-              bookings={bookings}
-              equipment={equipment}
-              workSchedule={workSchedule}
-              draggingJobId={draggingJobId}
-              onCellClick={setQuickCreateDate}
-              onJobClick={openJob}
-              onJobDragStart={setDraggingJobId}
-              onJobDragEnd={() => setDraggingJobId(null)}
-              onDropOnDate={handleDropOnDate}
-            />
-          )}
-          {view === 'week' && (
-            <WeekView
-              jobs={jobs}
-              availability={availability}
-              bookings={bookings}
-              equipment={equipment}
-              workSchedule={workSchedule}
-              draggingJobId={draggingJobId}
-              onCellClick={setQuickCreateDate}
-              onJobClick={openJob}
-              onJobDragStart={setDraggingJobId}
-              onJobDragEnd={() => setDraggingJobId(null)}
-              onDropOnDate={handleDropOnDate}
-            />
-          )}
-          {view === 'board' && (
-            <BoardView
-              jobs={jobs}
-              crews={crews}
-              equipment={equipment}
-              crewFilter={crewFilter}
-              onCrewFilterChange={setCrewFilter}
-              draggingJobId={draggingJobId}
-              onJobDragStart={setDraggingJobId}
-              onJobDragEnd={() => setDraggingJobId(null)}
-              onDropStatus={handleDropStatus}
-              onJobClick={openJob}
-              onDropCrewOnJob={handleDropCrewOnJob}
-              onDropEquipmentOnJob={handleDropEquipmentOnJob}
-            />
-          )}
-        </div>
+        {view === 'month' && (
+          <MonthView
+            cursor={cursor}
+            jobs={jobs}
+            availability={availability}
+            bookings={bookings}
+            equipment={equipment}
+            workSchedule={workSchedule}
+            draggingJobId={draggingJobId}
+            onCellClick={setQuickCreateDate}
+            onJobClick={openJob}
+            onJobDragStart={setDraggingJobId}
+            onJobDragEnd={() => setDraggingJobId(null)}
+            onDropOnDate={handleDropOnDate}
+          />
+        )}
+        {view === 'week' && (
+          <WeekView
+            jobs={jobs}
+            availability={availability}
+            bookings={bookings}
+            equipment={equipment}
+            workSchedule={workSchedule}
+            draggingJobId={draggingJobId}
+            onCellClick={setQuickCreateDate}
+            onJobClick={openJob}
+            onJobDragStart={setDraggingJobId}
+            onJobDragEnd={() => setDraggingJobId(null)}
+            onDropOnDate={handleDropOnDate}
+          />
+        )}
+        {view === 'board' && (
+          <BoardView
+            jobs={jobs}
+            crews={crews}
+            equipment={equipment}
+            crewFilter={crewFilter}
+            onCrewFilterChange={setCrewFilter}
+            draggingJobId={draggingJobId}
+            onJobDragStart={setDraggingJobId}
+            onJobDragEnd={() => setDraggingJobId(null)}
+            onDropStatus={handleDropStatus}
+            onJobClick={openJob}
+            onDropCrewOnJob={handleDropCrewOnJob}
+            onDropEquipmentOnJob={handleDropEquipmentOnJob}
+          />
+        )}
       </div>
 
       {selectedJob && (
@@ -429,6 +425,5 @@ const styles = {
   monthToolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '0.75rem' },
   nav: { display: 'flex', alignItems: 'center', gap: '8px' },
   monthLabel: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.4rem', letterSpacing: '1px', textTransform: 'uppercase', color: COLORS.textPrimary },
-  layout: { display: 'flex', gap: '24px', alignItems: 'flex-start' },
-  main: { flex: 1, minWidth: 0 },
+  main: { flex: 1, minWidth: 0, position: 'relative' },
 }
