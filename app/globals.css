@@ -131,6 +131,17 @@ textarea.field {
   resize: vertical;
 }
 
+/* The browser's default calendar-picker glyph is dark and disappears against
+   our dark field background everywhere a date input is used. Inverted +
+   dimmed so it reads clearly at rest and comes fully opaque on hover. */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.7);
+  cursor: pointer;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
 /* ---------- Cards ---------- */
 .card {
   background: var(--surface);
