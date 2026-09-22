@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin, getCompanyId, allOwnedByCompany } from '../../../lib/serverAuth'
-import { computeEndDate, countWorkDays, MAX_DURATION_DAYS } from '../../../lib/workdays'
+import { MAX_DURATION_DAYS } from '../../../lib/workdays'
 import { fetchWorkScheduleMap } from '../../../lib/workSchedule'
 import { assertNoJobConflicts } from '../../../lib/conflictsServer'
+import { resolveJobDates } from '../../../lib/jobDates'
 import {
   ApiError, handleError, readJson, cleanText, cleanEmail, cleanEnum, cleanDate, cleanId, cleanIdList,
-  cleanDuration, assertDateOrder, JOB_STATUSES, LIMITS,
+  cleanDuration, JOB_STATUSES, LIMITS,
 } from '../../../lib/apiUtils'
 
 // Columns a client may set on a job, each with its validator. company_id,
@@ -34,37 +35,6 @@ function cleanJobFields(body) {
 }
 
 const JOB_SELECT = '*, crew:crews(id, name, color), job_equipment(equipment_id, equipment(id, name, category))'
-
-// Duration is stored in WORK days, not calendar days. When the caller supplies
-// duration_days explicitly (the client already reconciled it against dates via
-// lib/workdays.js) it's trusted as-is; otherwise it's derived from whichever of
-// start/end/duration is missing.
-// Inputs are already validated (real ISO dates, duration 1..365 or null); the
-// date helpers return null when a range is unusable, which is reported as a 400
-// rather than written to the database.
-function resolveDatesAndDuration({ start_date, end_date, duration_days }, workSchedule) {
-  start_date = start_date || null
-  end_date = end_date || null
-  let duration = duration_days ?? null
-
-  assertDateOrder(start_date, end_date)
-
-  if (!start_date || !end_date) {
-    if (start_date && duration) end_date = computeEndDate(start_date, duration, workSchedule)
-    else duration = null
-  } else if (!duration) {
-    duration = countWorkDays(start_date, end_date, workSchedule)
-  }
-
-  // 0 is a legitimate count (a weekend-only job); null means the range was unusable.
-  if (start_date && end_date && duration == null) {
-    throw new ApiError(400, 'Dates are out of range or longer than a job can span')
-  }
-  if (start_date && duration && !end_date) {
-    throw new ApiError(400, 'Could not work out an end date from that start date and duration')
-  }
-  return { start_date, end_date, duration_days: duration }
-}
 
 async function setJobEquipment(companyId, jobId, equipmentIds) {
   if (!Array.isArray(equipmentIds)) return
@@ -120,7 +90,7 @@ export async function POST(request) {
     }
 
     const workSchedule = await fetchWorkScheduleMap(companyId)
-    const resolved = resolveDatesAndDuration({ start_date, end_date, duration_days }, workSchedule)
+    const resolved = resolveJobDates({ start_date, end_date, duration_days }, workSchedule)
 
     await assertNoJobConflicts(companyId, {
       jobId: null, crewId: crew_id || null, equipmentIds: equipment_ids || [],
@@ -189,7 +159,7 @@ export async function PATCH(request) {
       const workSchedule = await fetchWorkScheduleMap(companyId)
       const start_date = 'start_date' in update ? (update.start_date || null) : existing.start_date
       const end_date = 'end_date' in update ? (update.end_date || null) : existing.end_date
-      const resolved = resolveDatesAndDuration({ start_date, end_date, duration_days }, workSchedule)
+      const resolved = resolveJobDates({ start_date, end_date, duration_days }, workSchedule)
       update.start_date = resolved.start_date
       update.end_date = resolved.end_date
       update.duration_days = resolved.duration_days

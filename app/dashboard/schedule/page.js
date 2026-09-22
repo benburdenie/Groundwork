@@ -48,6 +48,7 @@ function ScheduleContent() {
   const [workScheduleRows, setWorkScheduleRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [formError, setFormError] = useState(null) // shown inline in JobFormModal, not the page banner
   const [busy, setBusy] = useState(false)
 
   const [cursor, setCursor] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
@@ -102,18 +103,24 @@ function ScheduleContent() {
   const openJob = (job) => { setSelectedJob(job); setEditingJob(undefined) }
   const closePanel = () => setSelectedJob(null)
 
-  const openEdit = (job) => { setSelectedJob(null); setEditingJob(job) }
-  const openCreate = () => { setSelectedJob(null); setEditingJob(null) }
-  const closeForm = () => setEditingJob(undefined)
+  const openEdit = (job) => { setSelectedJob(null); setFormError(null); setEditingJob(job) }
+  const openCreate = () => { setSelectedJob(null); setFormError(null); setEditingJob(null) }
+  const closeForm = () => { setEditingJob(undefined); setFormError(null) }
 
+  // A conflict rejected by the server (a race with another save, since the
+  // client already checked what it knew about) shows inline in the modal —
+  // not the page's background error banner, which sits behind the modal
+  // overlay where the user would never see it — and the form stays open so
+  // nothing looks like it silently vanished.
   const handleFormSubmit = async (payload) => {
     setBusy(true)
+    setFormError(null)
     const isEdit = editingJob && editingJob.id
     const res = isEdit
       ? await apiPatch('/api/jobs', { id: editingJob.id, ...payload })
       : await apiPost('/api/jobs', payload)
     setBusy(false)
-    if (res.error) { setError(res.error); return }
+    if (res.error) { setFormError(res.error); return }
     closeForm()
     await refreshAll()
   }
@@ -308,53 +315,55 @@ function ScheduleContent() {
             onJobClick={openJob}
           />
         )}
-        {view === 'month' && (
-          <MonthView
-            cursor={cursor}
-            jobs={jobs}
-            availability={availability}
-            bookings={bookings}
-            equipment={equipment}
-            workSchedule={workSchedule}
-            draggingJobId={draggingJobId}
-            onCellClick={setQuickCreateDate}
-            onJobClick={openJob}
-            onJobDragStart={setDraggingJobId}
-            onJobDragEnd={() => setDraggingJobId(null)}
-            onDropOnDate={handleDropOnDate}
-          />
-        )}
-        {view === 'week' && (
-          <WeekView
-            jobs={jobs}
-            availability={availability}
-            bookings={bookings}
-            equipment={equipment}
-            workSchedule={workSchedule}
-            draggingJobId={draggingJobId}
-            onCellClick={setQuickCreateDate}
-            onJobClick={openJob}
-            onJobDragStart={setDraggingJobId}
-            onJobDragEnd={() => setDraggingJobId(null)}
-            onDropOnDate={handleDropOnDate}
-          />
-        )}
-        {view === 'board' && (
-          <BoardView
-            jobs={jobs}
-            crews={crews}
-            equipment={equipment}
-            crewFilter={crewFilter}
-            onCrewFilterChange={setCrewFilter}
-            draggingJobId={draggingJobId}
-            onJobDragStart={setDraggingJobId}
-            onJobDragEnd={() => setDraggingJobId(null)}
-            onDropStatus={handleDropStatus}
-            onJobClick={openJob}
-            onDropCrewOnJob={handleDropCrewOnJob}
-            onDropEquipmentOnJob={handleDropEquipmentOnJob}
-          />
-        )}
+        <div style={styles.calendarArea}>
+          {view === 'month' && (
+            <MonthView
+              cursor={cursor}
+              jobs={jobs}
+              availability={availability}
+              bookings={bookings}
+              equipment={equipment}
+              workSchedule={workSchedule}
+              draggingJobId={draggingJobId}
+              onCellClick={setQuickCreateDate}
+              onJobClick={openJob}
+              onJobDragStart={setDraggingJobId}
+              onJobDragEnd={() => setDraggingJobId(null)}
+              onDropOnDate={handleDropOnDate}
+            />
+          )}
+          {view === 'week' && (
+            <WeekView
+              jobs={jobs}
+              availability={availability}
+              bookings={bookings}
+              equipment={equipment}
+              workSchedule={workSchedule}
+              draggingJobId={draggingJobId}
+              onCellClick={setQuickCreateDate}
+              onJobClick={openJob}
+              onJobDragStart={setDraggingJobId}
+              onJobDragEnd={() => setDraggingJobId(null)}
+              onDropOnDate={handleDropOnDate}
+            />
+          )}
+          {view === 'board' && (
+            <BoardView
+              jobs={jobs}
+              crews={crews}
+              equipment={equipment}
+              crewFilter={crewFilter}
+              onCrewFilterChange={setCrewFilter}
+              draggingJobId={draggingJobId}
+              onJobDragStart={setDraggingJobId}
+              onJobDragEnd={() => setDraggingJobId(null)}
+              onDropStatus={handleDropStatus}
+              onJobClick={openJob}
+              onDropCrewOnJob={handleDropCrewOnJob}
+              onDropEquipmentOnJob={handleDropEquipmentOnJob}
+            />
+          )}
+        </div>
       </div>
 
       {selectedJob && (
@@ -383,6 +392,7 @@ function ScheduleContent() {
           bookings={bookings}
           workSchedule={workSchedule}
           saving={busy}
+          submitError={formError}
           onClose={closeForm}
           onSubmit={handleFormSubmit}
           onDelete={handleDeleteJob}
@@ -427,5 +437,6 @@ const styles = {
   monthToolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '0.75rem' },
   nav: { display: 'flex', alignItems: 'center', gap: '8px' },
   monthLabel: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.4rem', letterSpacing: '1px', textTransform: 'uppercase', color: COLORS.textPrimary },
-  main: { flex: 1, minWidth: 0, position: 'relative' },
+  main: { flex: 1, minWidth: 0, display: 'flex', alignItems: 'stretch', gap: '12px' },
+  calendarArea: { flex: 1, minWidth: 0 },
 }

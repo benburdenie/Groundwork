@@ -1,5 +1,5 @@
-import { COLORS } from '../../../lib/theme'
-import { isWorkDay } from '../../../lib/workdays'
+import { COLORS } from '../../../lib/theme.js'
+import { isWorkDay } from '../../../lib/workdays.js'
 
 export function fmt(date) {
   const y = date.getFullYear()

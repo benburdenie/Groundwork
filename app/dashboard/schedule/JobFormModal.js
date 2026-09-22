@@ -26,7 +26,7 @@ function formFromJob(job) {
   }
 }
 
-export default function JobFormModal({ editingJob, crews, equipment, jobs, availability, bookings, workSchedule, saving, onClose, onSubmit, onDelete }) {
+export default function JobFormModal({ editingJob, crews, equipment, jobs, availability, bookings, workSchedule, saving, submitError, onClose, onSubmit, onDelete }) {
   const [formData, setFormData] = useState(() => editingJob ? formFromJob(editingJob) : emptyForm())
 
   const conflicts = useMemo(() => {
@@ -81,6 +81,8 @@ export default function JobFormModal({ editingJob, crews, equipment, jobs, avail
     <div className="modal-backdrop" style={styles.overlay} onClick={onClose}>
       <form className="modal-panel" style={styles.modal} onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
         <h3 style={styles.modalTitle}>{editingJob ? 'Edit job' : 'New job'}</h3>
+
+        {submitError && <div style={shared.errorBox}>{submitError}</div>}
 
         <div style={shared.group}>
           <label style={shared.label}>Job name</label>
