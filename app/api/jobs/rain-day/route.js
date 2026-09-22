@@ -5,8 +5,10 @@ import { fetchWorkScheduleRows, setWorkScheduleEntry } from '../../../../lib/wor
 import { handleError, readJson, cleanDate } from '../../../../lib/apiUtils'
 
 // POST — marks `date` as a rain day in work_schedule (type: 'rain'), then every
-// active, incomplete job scheduled to be worked on that date has its start and
-// end date pushed forward by one work day.
+// active, incomplete job scheduled to be worked on that date has its end date
+// (only) pushed back by one work day — the rained-out day just gets tacked on
+// at the end. start_date never changes: the job already started, and a rain
+// day doesn't undo that.
 export async function POST(request) {
   try {
     const companyId = await getCompanyId(request)
@@ -33,17 +35,16 @@ export async function POST(request) {
 
     let affected = 0
     for (const job of jobs || []) {
-      const newStart = addWorkDays(job.start_date, 1, workSchedule)
       const newEnd = addWorkDays(job.end_date, 1, workSchedule)
-      const newDuration = countWorkDays(newStart, newEnd, workSchedule)
+      const newDuration = countWorkDays(job.start_date, newEnd, workSchedule)
       // The date helpers return null for unusable dates; never write that over a job.
-      if (!newStart || !newEnd || !newDuration) {
+      if (!newEnd || !newDuration) {
         console.warn(`[rain-day] skipped job ${job.id}: could not recompute dates`)
         continue
       }
       const { error } = await supabaseAdmin
         .from('jobs')
-        .update({ start_date: newStart, end_date: newEnd, duration_days: newDuration })
+        .update({ end_date: newEnd, duration_days: newDuration })
         .eq('id', job.id)
         .eq('company_id', companyId)
       if (error) throw error

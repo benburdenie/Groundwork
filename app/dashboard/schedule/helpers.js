@@ -1,4 +1,5 @@
 import { COLORS } from '../../../lib/theme'
+import { isWorkDay } from '../../../lib/workdays'
 
 export function fmt(date) {
   const y = date.getFullYear()
@@ -46,7 +47,13 @@ export function equipmentDeployedOnDate(dateStr, jobs, bookings) {
   return ids
 }
 
-export function jobsForDate(jobs, dateStr) {
+// Jobs shown on a given calendar cell. Purely visual: a job spanning a
+// weekend (or a rain/holiday day) doesn't get a pill on that non-work-day
+// cell — the stored start_date/end_date don't change, the job just appears
+// to pause and pick back up on the next work day — unless a work_schedule
+// override turns that date into a working day.
+export function jobsForDate(jobs, dateStr, workSchedule) {
+  if (workSchedule && !isWorkDay(dateStr, workSchedule)) return []
   return (jobs || []).filter(j => {
     if (j.start_date && j.end_date) return j.start_date <= dateStr && dateStr <= j.end_date
     if (j.start_date && !j.end_date) return j.start_date === dateStr

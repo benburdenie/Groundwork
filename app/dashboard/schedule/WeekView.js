@@ -16,7 +16,7 @@ export default function WeekView({ jobs, availability, bookings, equipment, work
         const isToday = dateStr === todayS
         const isWeekend = date.getDay() === 0 || date.getDay() === 6
         const override = workSchedule.get(dateStr)
-        const dayJobs = jobsForDate(jobs, dateStr)
+        const dayJobs = jobsForDate(jobs, dateStr, workSchedule)
         const blocks = crewBlocksForDate(availability, dateStr)
         const deployed = totalEquipment > 0 ? equipmentDeployedOnDate(dateStr, jobs, bookings).size : 0
         const pressure = totalEquipment > 0 ? deployed / totalEquipment : 0

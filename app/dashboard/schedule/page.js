@@ -12,7 +12,7 @@ import { Skeleton } from '../ui'
 import MonthView from './MonthView'
 import WeekView from './WeekView'
 import BoardView from './BoardView'
-import UnscheduledSidebar from './UnscheduledSidebar'
+import UnscheduledDropdown from './UnscheduledDropdown'
 import JobPanel from './JobPanel'
 import JobFormModal from './JobFormModal'
 import QuickCreatePopover from './QuickCreatePopover'
@@ -261,8 +261,6 @@ function ScheduleContent() {
     </div>
   )
 
-  const showSidebar = view === 'month' || view === 'week'
-
   return (
     <div style={styles.page}>
       <div style={shared.titleRow}>
@@ -275,6 +273,14 @@ function ScheduleContent() {
               </button>
             ))}
           </div>
+          <UnscheduledDropdown
+            jobs={jobs}
+            draggingJobId={draggingJobId}
+            onJobDragStart={setDraggingJobId}
+            onJobDragEnd={() => setDraggingJobId(null)}
+            onDropUnschedule={handleDropUnschedule}
+            onJobClick={openJob}
+          />
           <button className="btn btn-secondary" onClick={() => setRainDayOpen(true)}><CloudRain size={15} />Rain day</button>
           <button className="btn btn-secondary" onClick={() => setWorkDayOpen(true)}><CalendarClock size={15} />Work day</button>
           <Link href="/dashboard/dispatch" target="_blank" className="btn btn-secondary"><Printer size={15} />Dispatch sheet</Link>
@@ -296,16 +302,6 @@ function ScheduleContent() {
       )}
 
       <div style={styles.main}>
-        {showSidebar && (
-          <UnscheduledSidebar
-            jobs={jobs}
-            draggingJobId={draggingJobId}
-            onJobDragStart={setDraggingJobId}
-            onJobDragEnd={() => setDraggingJobId(null)}
-            onDropUnschedule={handleDropUnschedule}
-            onJobClick={openJob}
-          />
-        )}
         {view === 'month' && (
           <MonthView
             cursor={cursor}
@@ -425,5 +421,5 @@ const styles = {
   monthToolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '0.75rem' },
   nav: { display: 'flex', alignItems: 'center', gap: '8px' },
   monthLabel: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.4rem', letterSpacing: '1px', textTransform: 'uppercase', color: COLORS.textPrimary },
-  main: { flex: 1, minWidth: 0, position: 'relative' },
+  main: { flex: 1, minWidth: 0 },
 }
