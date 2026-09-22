@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin, getCompanyId } from '../../../lib/serverAuth'
+import {
+  ApiError, handleError, readJson, cleanId, cleanDate, cleanText, assertDateOrder, assertRangeLength, LIMITS,
+} from '../../../lib/apiUtils'
 
 // GET — list equipment bookings for this company, optionally filtered by job
 export async function GET(request) {
@@ -8,7 +11,7 @@ export async function GET(request) {
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { searchParams } = new URL(request.url)
-    const jobId = searchParams.get('job_id')
+    const jobId = cleanId(searchParams.get('job_id') || undefined, 'job_id')
 
     let query = supabaseAdmin
       .from('equipment_bookings')
@@ -20,7 +23,7 @@ export async function GET(request) {
     if (error) throw error
     return NextResponse.json({ bookings: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'equipment-bookings')
   }
 }
 
@@ -30,16 +33,23 @@ export async function POST(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { equipment_id, job_id, start_date, end_date, notes } = await request.json()
-    if (!equipment_id || !job_id) return NextResponse.json({ error: 'equipment_id and job_id are required' }, { status: 400 })
-    if (!start_date || !end_date) return NextResponse.json({ error: 'start_date and end_date are required' }, { status: 400 })
+    const body = await readJson(request)
+    const equipment_id = cleanId(body.equipment_id, 'equipment_id', { required: true })
+    const job_id = cleanId(body.job_id, 'job_id', { required: true })
+    const start_date = cleanDate(body.start_date, 'start_date', { required: true })
+    const end_date = cleanDate(body.end_date, 'end_date', { required: true })
+    const notes = cleanText(body.notes, 'notes', { max: LIMITS.notes })
+    assertDateOrder(start_date, end_date)
+    assertRangeLength(start_date, end_date)
 
-    const { data: eq } = await supabaseAdmin
-      .from('equipment').select('id').eq('id', equipment_id).eq('company_id', companyId).maybeSingle()
-    if (!eq) return NextResponse.json({ error: 'Equipment not found' }, { status: 404 })
-    const { data: job } = await supabaseAdmin
-      .from('jobs').select('id').eq('id', job_id).eq('company_id', companyId).maybeSingle()
-    if (!job) return NextResponse.json({ error: 'Job not found' }, { status: 404 })
+    const { data: eq, error: eqError } = await supabaseAdmin
+      .from('equipment').select('id').eq('id', equipment_id).eq('company_id', companyId).eq('is_active', true).maybeSingle()
+    if (eqError) throw eqError
+    if (!eq) throw new ApiError(404, 'Equipment not found')
+    const { data: job, error: jobError } = await supabaseAdmin
+      .from('jobs').select('id').eq('id', job_id).eq('company_id', companyId).eq('is_active', true).maybeSingle()
+    if (jobError) throw jobError
+    if (!job) throw new ApiError(404, 'Job not found')
 
     const { data, error } = await supabaseAdmin
       .from('equipment_bookings')
@@ -50,7 +60,7 @@ export async function POST(request) {
     if (error) throw error
     return NextResponse.json({ booking: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'equipment-bookings')
   }
 }
 
@@ -60,8 +70,7 @@ export async function DELETE(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id } = await request.json()
-    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
+    const id = cleanId((await readJson(request)).id, 'id', { required: true })
 
     const { error } = await supabaseAdmin
       .from('equipment_bookings')
@@ -72,6 +81,6 @@ export async function DELETE(request) {
     if (error) throw error
     return NextResponse.json({ success: true })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'equipment-bookings')
   }
 }

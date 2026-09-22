@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin, getCompanyId } from '../../../lib/serverAuth'
+import { handleError } from '../../../lib/apiUtils'
 
 // GET — fetch the logged-in user's company
 export async function GET(request) {
@@ -16,6 +17,6 @@ export async function GET(request) {
     if (error) throw error
     return NextResponse.json({ company: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'me')
   }
 }

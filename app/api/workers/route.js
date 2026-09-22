@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin, getCompanyId, allOwnedByCompany } from '../../../lib/serverAuth'
+import { handleError, readJson, cleanText, cleanEmail, cleanId, LIMITS } from '../../../lib/apiUtils'
 
 // GET — fetch all workers for this company
 export async function GET(request) {
@@ -17,7 +18,7 @@ export async function GET(request) {
     if (error) throw error
     return NextResponse.json({ workers: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'workers')
   }
 }
 
@@ -27,10 +28,13 @@ export async function POST(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const body = await request.json()
-    const { name, role, phone, email, crew_id, notes } = body
-
-    if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    const body = await readJson(request)
+    const name = cleanText(body.name, 'name', { max: LIMITS.name, required: true })
+    const role = cleanText(body.role, 'role', { max: LIMITS.short })
+    const phone = cleanText(body.phone, 'phone', { max: LIMITS.phone })
+    const email = cleanEmail(body.email)
+    const crew_id = cleanId(body.crew_id, 'crew_id')
+    const notes = cleanText(body.notes, 'notes', { max: LIMITS.notes })
     if (!(await allOwnedByCompany('crews', [crew_id], companyId))) {
       return NextResponse.json({ error: 'Crew not found' }, { status: 404 })
     }
@@ -47,7 +51,7 @@ export async function POST(request) {
     if (error) throw error
     return NextResponse.json({ worker: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'workers')
   }
 }
 
@@ -57,9 +61,14 @@ export async function PATCH(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id, name, role, phone, email, crew_id, notes } = await request.json()
-    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
-    if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    const body = await readJson(request)
+    const id = cleanId(body.id, 'id', { required: true })
+    const name = cleanText(body.name, 'name', { max: LIMITS.name, required: true })
+    const role = cleanText(body.role, 'role', { max: LIMITS.short })
+    const phone = cleanText(body.phone, 'phone', { max: LIMITS.phone })
+    const email = cleanEmail(body.email)
+    const crew_id = cleanId(body.crew_id, 'crew_id')
+    const notes = cleanText(body.notes, 'notes', { max: LIMITS.notes })
     if (!(await allOwnedByCompany('crews', [crew_id], companyId))) {
       return NextResponse.json({ error: 'Crew not found' }, { status: 404 })
     }
@@ -76,7 +85,7 @@ export async function PATCH(request) {
     if (!data) return NextResponse.json({ error: 'Worker not found' }, { status: 404 })
     return NextResponse.json({ worker: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'workers')
   }
 }
 
@@ -86,8 +95,7 @@ export async function DELETE(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id } = await request.json()
-    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
+    const id = cleanId((await readJson(request)).id, 'id', { required: true })
 
     const { error } = await supabaseAdmin
       .from('workers')
@@ -98,6 +106,6 @@ export async function DELETE(request) {
     if (error) throw error
     return NextResponse.json({ success: true })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'workers')
   }
 }

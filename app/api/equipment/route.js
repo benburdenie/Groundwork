@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin, getCompanyId } from '../../../lib/serverAuth'
+import {
+  handleError, readJson, cleanText, cleanEnum, cleanId,
+  EQUIPMENT_STATUSES, EQUIPMENT_CATEGORIES, LIMITS,
+} from '../../../lib/apiUtils'
 
 function today() {
   return new Date().toISOString().slice(0, 10)
@@ -80,7 +84,7 @@ export async function GET(request) {
     const equipment = await withComputedStatus(companyId, data)
     return NextResponse.json({ equipment })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'equipment')
   }
 }
 
@@ -90,11 +94,11 @@ export async function POST(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const body = await request.json()
-    const { name, category, status, notes } = body
-
-    if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
-    if (!category) return NextResponse.json({ error: 'Category is required' }, { status: 400 })
+    const body = await readJson(request)
+    const name = cleanText(body.name, 'name', { max: LIMITS.name, required: true })
+    const category = cleanEnum(body.category, 'category', EQUIPMENT_CATEGORIES, { required: true })
+    const status = cleanEnum(body.status, 'status', EQUIPMENT_STATUSES)
+    const notes = cleanText(body.notes, 'notes', { max: LIMITS.notes })
 
     const { data, error } = await supabaseAdmin
       .from('equipment')
@@ -105,7 +109,7 @@ export async function POST(request) {
     if (error) throw error
     return NextResponse.json({ equipment: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'equipment')
   }
 }
 
@@ -115,9 +119,12 @@ export async function PATCH(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id, name, category, status, notes } = await request.json()
-    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
-    if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    const body = await readJson(request)
+    const id = cleanId(body.id, 'id', { required: true })
+    const name = cleanText(body.name, 'name', { max: LIMITS.name, required: true })
+    const category = cleanEnum(body.category, 'category', EQUIPMENT_CATEGORIES)
+    const status = cleanEnum(body.status, 'status', EQUIPMENT_STATUSES)
+    const notes = cleanText(body.notes, 'notes', { max: LIMITS.notes })
 
     const { data, error } = await supabaseAdmin
       .from('equipment')
@@ -131,7 +138,7 @@ export async function PATCH(request) {
     if (!data) return NextResponse.json({ error: 'Equipment not found' }, { status: 404 })
     return NextResponse.json({ equipment: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'equipment')
   }
 }
 
@@ -141,8 +148,7 @@ export async function DELETE(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id } = await request.json()
-    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
+    const id = cleanId((await readJson(request)).id, 'id', { required: true })
 
     const { error } = await supabaseAdmin
       .from('equipment')
@@ -153,6 +159,6 @@ export async function DELETE(request) {
     if (error) throw error
     return NextResponse.json({ success: true })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'equipment')
   }
 }

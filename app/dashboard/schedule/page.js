@@ -295,9 +295,10 @@ function ScheduleContent() {
         </div>
       )}
 
-      <div style={styles.layout}>
+      <div style={{ ...styles.layout, alignItems: view === 'month' ? 'stretch' : 'flex-start' }}>
         {showSidebar && (
           <UnscheduledSidebar
+            fill={view === 'month'}
             jobs={jobs}
             draggingJobId={draggingJobId}
             onJobDragStart={setDraggingJobId}

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { ApiError, handleError, readJson, cleanText, cleanId, LIMITS } from '../../../lib/apiUtils'
 
 // Runs right after supabase.auth.signUp() on the client. There may be no session
 // yet (email confirmation), so the caller can't send a bearer token; instead the
@@ -12,11 +13,14 @@ export async function POST(request) {
 
     const supabaseAdmin = createClient(url, serviceKey)
 
-    const { userId, companyName, yourName, email } = await request.json()
-
-    if (!userId || !companyName?.trim() || !yourName?.trim() || !email) {
-      return NextResponse.json({ error: 'Company name, your name, and email are required' }, { status: 400 })
+    const body = await readJson(request)
+    if (!body.userId || !body.companyName || !body.yourName || !body.email) {
+      throw new ApiError(400, 'Company name, your name, and email are required')
     }
+    const userId = cleanId(body.userId, 'userId', { required: true })
+    const companyName = cleanText(body.companyName, 'company name', { max: LIMITS.name, required: true })
+    const yourName = cleanText(body.yourName, 'your name', { max: LIMITS.name, required: true })
+    const email = cleanText(body.email, 'email', { max: LIMITS.email, required: true })
 
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.getUserById(userId)
     const authUser = authData?.user
@@ -37,7 +41,7 @@ export async function POST(request) {
 
     const { data: company, error: companyError } = await supabaseAdmin
       .from('companies')
-      .insert({ name: companyName.trim(), slug, owner_id: userId })
+      .insert({ name: companyName, slug, owner_id: userId })
       .select()
       .single()
 
@@ -49,7 +53,7 @@ export async function POST(request) {
         company_id: company.id,
         user_id: userId,
         role: 'owner',
-        display_name: yourName.trim(),
+        display_name: yourName,
         email: email,
       })
 
@@ -61,7 +65,6 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, companyId: company.id })
   } catch (err) {
-    console.error('Signup API error:', err.message)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'signup')
   }
 }

@@ -94,7 +94,7 @@ export default function JobFormModal({ editingJob, crews, equipment, jobs, avail
           </div>
           <div style={shared.group}>
             <label style={shared.label}>Duration (work days)</label>
-            <input className="field" name="duration" type="number" min="1" value={formData.duration} onChange={handleChange} />
+            <input className="field" name="duration" type="number" min="1" max="365" value={formData.duration} onChange={handleChange} />
           </div>
         </div>
 

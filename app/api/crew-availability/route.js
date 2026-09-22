@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin, getCompanyId } from '../../../lib/serverAuth'
+import {
+  ApiError, handleError, readJson, cleanId, cleanDate, cleanText, assertDateOrder, assertRangeLength, LIMITS,
+} from '../../../lib/apiUtils'
 
 // GET — list all crew unavailability blocks for this company
 export async function GET(request) {
@@ -16,7 +19,7 @@ export async function GET(request) {
     if (error) throw error
     return NextResponse.json({ availability: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'crew-availability')
   }
 }
 
@@ -26,13 +29,18 @@ export async function POST(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { crew_id, start_date, end_date, reason } = await request.json()
-    if (!crew_id) return NextResponse.json({ error: 'crew_id is required' }, { status: 400 })
-    if (!start_date || !end_date) return NextResponse.json({ error: 'start_date and end_date are required' }, { status: 400 })
+    const body = await readJson(request)
+    const crew_id = cleanId(body.crew_id, 'crew_id', { required: true })
+    const start_date = cleanDate(body.start_date, 'start_date', { required: true })
+    const end_date = cleanDate(body.end_date, 'end_date', { required: true })
+    const reason = cleanText(body.reason, 'reason', { max: LIMITS.reason })
+    assertDateOrder(start_date, end_date)
+    assertRangeLength(start_date, end_date)
 
-    const { data: crew } = await supabaseAdmin
-      .from('crews').select('id').eq('id', crew_id).eq('company_id', companyId).maybeSingle()
-    if (!crew) return NextResponse.json({ error: 'Crew not found' }, { status: 404 })
+    const { data: crew, error: crewError } = await supabaseAdmin
+      .from('crews').select('id').eq('id', crew_id).eq('company_id', companyId).eq('is_active', true).maybeSingle()
+    if (crewError) throw crewError
+    if (!crew) throw new ApiError(404, 'Crew not found')
 
     const { data, error } = await supabaseAdmin
       .from('crew_availability')
@@ -43,7 +51,7 @@ export async function POST(request) {
     if (error) throw error
     return NextResponse.json({ availability: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'crew-availability')
   }
 }
 
@@ -53,8 +61,7 @@ export async function DELETE(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id } = await request.json()
-    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
+    const id = cleanId((await readJson(request)).id, 'id', { required: true })
 
     const { error } = await supabaseAdmin
       .from('crew_availability')
@@ -65,6 +72,6 @@ export async function DELETE(request) {
     if (error) throw error
     return NextResponse.json({ success: true })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'crew-availability')
   }
 }

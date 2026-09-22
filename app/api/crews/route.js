@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin, getCompanyId } from '../../../lib/serverAuth'
+import { handleError, readJson, cleanText, cleanColor, cleanId, LIMITS } from '../../../lib/apiUtils'
 
 // GET — fetch all crews for this company
 export async function GET(request) {
@@ -17,7 +18,7 @@ export async function GET(request) {
     if (error) throw error
     return NextResponse.json({ crews: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'crews')
   }
 }
 
@@ -27,10 +28,11 @@ export async function POST(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const body = await request.json()
-    const { name, foreman_name, color, notes } = body
-
-    if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    const body = await readJson(request)
+    const name = cleanText(body.name, 'name', { max: LIMITS.name, required: true })
+    const foreman_name = cleanText(body.foreman_name, 'foreman_name', { max: LIMITS.short })
+    const color = cleanColor(body.color)
+    const notes = cleanText(body.notes, 'notes', { max: LIMITS.notes })
 
     const { data, error } = await supabaseAdmin
       .from('crews')
@@ -41,7 +43,7 @@ export async function POST(request) {
     if (error) throw error
     return NextResponse.json({ crew: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'crews')
   }
 }
 
@@ -51,9 +53,12 @@ export async function PATCH(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id, name, foreman_name, color, notes } = await request.json()
-    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
-    if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    const body = await readJson(request)
+    const id = cleanId(body.id, 'id', { required: true })
+    const name = cleanText(body.name, 'name', { max: LIMITS.name, required: true })
+    const foreman_name = cleanText(body.foreman_name, 'foreman_name', { max: LIMITS.short })
+    const color = cleanColor(body.color)
+    const notes = cleanText(body.notes, 'notes', { max: LIMITS.notes })
 
     const { data, error } = await supabaseAdmin
       .from('crews')
@@ -67,7 +72,7 @@ export async function PATCH(request) {
     if (!data) return NextResponse.json({ error: 'Crew not found' }, { status: 404 })
     return NextResponse.json({ crew: data })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'crews')
   }
 }
 
@@ -77,8 +82,7 @@ export async function DELETE(request) {
     const companyId = await getCompanyId(request)
     if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id } = await request.json()
-    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
+    const id = cleanId((await readJson(request)).id, 'id', { required: true })
 
     const { error } = await supabaseAdmin
       .from('crews')
@@ -89,6 +93,6 @@ export async function DELETE(request) {
     if (error) throw error
     return NextResponse.json({ success: true })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return handleError(err, 'crews')
   }
 }
