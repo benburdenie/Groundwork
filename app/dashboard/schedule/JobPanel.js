@@ -1,6 +1,6 @@
 'use client'
 
-import { X, MapPin } from 'lucide-react'
+import { X, MapPin, Paperclip } from 'lucide-react'
 import { COLORS, FONT_COND, FONT_MONO, RADIUS, STATUS_LABELS, badgeStyle } from '../../../lib/theme'
 import { displayStatus, crewColor } from './helpers'
 
@@ -85,6 +85,15 @@ export default function JobPanel({ job, workers, jobs, bookings, onClose, onEdit
             </div>
           )}
 
+          {/* Planned, not built yet — visual only, deliberately muted rather than hidden. */}
+          <div style={styles.attachmentsSection}>
+            <div style={styles.attachmentsHeader}>
+              <Paperclip size={13} color={COLORS.textMuted} />
+              <span style={{ ...styles.sectionTitle, marginBottom: 0 }}>Attachments</span>
+              <span style={styles.comingSoonBadge}>Coming soon</span>
+            </div>
+          </div>
+
           {otherJobs.length > 0 && (
             <div style={styles.section}>
               <div style={styles.sectionTitle}>Crew&apos;s other active jobs</div>
@@ -126,6 +135,12 @@ const styles = {
   subLine: { fontSize: '0.82rem', color: COLORS.textPrimary, margin: '0.3rem 0', display: 'flex', alignItems: 'center', gap: '0.4rem' },
   dim: { color: COLORS.textMuted, fontSize: '0.78rem' },
   notes: { fontSize: '0.85rem', color: COLORS.textSecondary, margin: 0, fontStyle: 'italic' },
+  attachmentsSection: { marginTop: '20px', paddingTop: '16px', borderTop: `1px solid ${COLORS.borderSubtle}`, opacity: 0.55 },
+  attachmentsHeader: { display: 'flex', alignItems: 'center', gap: '0.45rem' },
+  comingSoonBadge: {
+    fontFamily: FONT_MONO, fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+    color: COLORS.textMuted, border: `1px solid ${COLORS.border}`, borderRadius: '4px', padding: '1px 6px', marginLeft: 'auto',
+  },
   otherJob: { display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', color: COLORS.primary, fontSize: '0.82rem', padding: '0.3rem 0', cursor: 'pointer' },
   actions: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '24px', paddingTop: '16px', borderTop: `1px solid ${COLORS.borderSubtle}` },
 }
