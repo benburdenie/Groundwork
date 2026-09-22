@@ -1,20 +1,31 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { HardHat } from 'lucide-react'
+import { HardHat, ChevronDown } from 'lucide-react'
 import { apiGet, apiPost, apiPatch, apiDelete } from '../../../lib/api'
 import { COLORS, FONT_COND, FONT_MONO, WORKER_ROLES, shared } from '../../../lib/theme'
 import { Spinner, Skeleton, EmptyState } from '../ui'
 
 const EMPTY_FORM = { name: '', role: WORKER_ROLES[WORKER_ROLES.length - 1], phone: '', email: '', crew_id: '', notes: '' }
 
+function formFromWorker(worker) {
+  return {
+    name: worker.name || '',
+    role: worker.role || WORKER_ROLES[WORKER_ROLES.length - 1],
+    phone: worker.phone || '',
+    email: worker.email || '',
+    crew_id: worker.crew_id || '',
+    notes: worker.notes || '',
+  }
+}
+
 export default function WorkersPage() {
   const [workers, setWorkers] = useState([])
   const [crews, setCrews] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
+  const [addingNew, setAddingNew] = useState(false)
+  const [expandedId, setExpandedId] = useState(null) // worker row expanded inline for editing
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState(EMPTY_FORM)
 
@@ -32,27 +43,31 @@ export default function WorkersPage() {
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value })
 
   const openAddForm = () => {
-    setEditingId(null)
+    setExpandedId(null)
     setFormData(EMPTY_FORM)
-    setShowForm(true)
+    setAddingNew(true)
   }
 
-  const openEditForm = (worker) => {
-    setEditingId(worker.id)
-    setFormData({
-      name: worker.name || '',
-      role: worker.role || WORKER_ROLES[WORKER_ROLES.length - 1],
-      phone: worker.phone || '',
-      email: worker.email || '',
-      crew_id: worker.crew_id || '',
-      notes: worker.notes || '',
-    })
-    setShowForm(true)
+  const closeAddForm = () => {
+    setAddingNew(false)
+    setFormData(EMPTY_FORM)
   }
 
-  const closeForm = () => {
-    setShowForm(false)
-    setEditingId(null)
+  // Accordion: clicking an already-expanded row collapses it; clicking another
+  // row switches straight to it. Editing happens in place, right under the row
+  // that was clicked — never at the top of the page.
+  const toggleRow = (worker) => {
+    if (expandedId === worker.id) {
+      setExpandedId(null)
+      return
+    }
+    setAddingNew(false)
+    setExpandedId(worker.id)
+    setFormData(formFromWorker(worker))
+  }
+
+  const closeExpanded = () => {
+    setExpandedId(null)
     setFormData(EMPTY_FORM)
   }
 
@@ -61,6 +76,7 @@ export default function WorkersPage() {
     setSaving(true)
     setError(null)
 
+    const editingId = expandedId
     const res = editingId
       ? await apiPatch('/api/workers', { id: editingId, ...formData })
       : await apiPost('/api/workers', formData)
@@ -72,7 +88,8 @@ export default function WorkersPage() {
     }
 
     setSaving(false)
-    closeForm()
+    if (editingId) closeExpanded()
+    else closeAddForm()
     await loadAll()
   }
 
@@ -80,6 +97,7 @@ export default function WorkersPage() {
     if (!confirm('Remove this worker?')) return
     const res = await apiDelete('/api/workers', { id })
     if (res.error) { setError(res.error); return }
+    if (expandedId === id) closeExpanded()
     await loadAll()
   }
 
@@ -102,18 +120,23 @@ export default function WorkersPage() {
     else unassigned.push(w)
   }
 
+  const rowProps = {
+    expandedId, formData, onChange: handleChange, onToggle: toggleRow,
+    onDelete: handleDelete, onSubmit: handleSubmit, onCancel: closeExpanded, saving, crews,
+  }
+
   return (
     <div>
       <div style={shared.titleRow}>
         <h2 style={shared.pageTitle}>Workers</h2>
-        <button className="btn btn-primary" onClick={() => (showForm ? closeForm() : openAddForm())}>
-          {showForm ? 'Cancel' : '+ New worker'}
+        <button className="btn btn-primary" onClick={() => (addingNew ? closeAddForm() : openAddForm())}>
+          {addingNew ? 'Cancel' : '+ New worker'}
         </button>
       </div>
 
       {error && <div style={shared.errorBox}>{error}</div>}
 
-      {showForm && (
+      {addingNew && (
         <form onSubmit={handleSubmit} style={shared.form}>
           <div style={shared.formRow}>
             <div style={shared.group}>
@@ -154,7 +177,7 @@ export default function WorkersPage() {
 
           <button className="btn btn-primary" type="submit" disabled={saving}>
             {saving && <Spinner />}
-            {saving ? 'Saving…' : editingId ? 'Save changes' : 'Save worker'}
+            {saving ? 'Saving…' : 'Save worker'}
           </button>
         </form>
       )}
@@ -174,7 +197,7 @@ export default function WorkersPage() {
               <h3 style={{ ...styles.sectionTitle, color: crew.color || COLORS.primary }}>{crew.name}</h3>
               <div style={styles.list}>
                 {workers.map(w => (
-                  <WorkerRow key={w.id} worker={w} onEdit={openEditForm} onDelete={handleDelete} />
+                  <WorkerRow key={w.id} worker={w} {...rowProps} />
                 ))}
               </div>
             </div>
@@ -185,7 +208,7 @@ export default function WorkersPage() {
               <h3 style={styles.sectionTitle}>Unassigned</h3>
               <div style={styles.list}>
                 {unassigned.map(w => (
-                  <WorkerRow key={w.id} worker={w} onEdit={openEditForm} onDelete={handleDelete} />
+                  <WorkerRow key={w.id} worker={w} {...rowProps} />
                 ))}
               </div>
             </div>
@@ -196,19 +219,72 @@ export default function WorkersPage() {
   )
 }
 
-function WorkerRow({ worker, onEdit, onDelete }) {
+function WorkerRow({ worker, expandedId, formData, onChange, onToggle, onDelete, onSubmit, onCancel, saving, crews }) {
+  const expanded = expandedId === worker.id
+
   return (
-    <div className="card row row-hover" style={styles.row}>
-      <div>
-        <span style={styles.workerName}>{worker.name}</span>
-        <span style={styles.workerRole}>{worker.role}</span>
-        {worker.phone && <span style={styles.workerContact}>{worker.phone}</span>}
-        {worker.email && <span style={styles.workerContact}>{worker.email}</span>}
+    <div className="card" style={styles.rowCard}>
+      <div className="row row-hover" style={styles.row} onClick={() => onToggle(worker)}>
+        <div>
+          <span style={styles.workerName}>{worker.name}</span>
+          <span style={styles.workerRole}>{worker.role}</span>
+          {worker.phone && <span style={styles.workerContact}>{worker.phone}</span>}
+          {worker.email && <span style={styles.workerContact}>{worker.email}</span>}
+        </div>
+        <div style={styles.actions}>
+          <button className="btn btn-danger btn-sm" onClick={(e) => { e.stopPropagation(); onDelete(worker.id) }}>Remove</button>
+          <ChevronDown size={16} color={COLORS.textMuted} style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 150ms ease', flexShrink: 0 }} />
+        </div>
       </div>
-      <div style={styles.actions}>
-        <button className="btn btn-secondary btn-sm" onClick={() => onEdit(worker)}>Edit</button>
-        <button className="btn btn-danger btn-sm" onClick={() => onDelete(worker.id)}>Remove</button>
-      </div>
+
+      {expanded && (
+        <form onSubmit={onSubmit} style={styles.inlineForm} onClick={(e) => e.stopPropagation()}>
+          <div style={shared.formRow}>
+            <div style={shared.group}>
+              <label style={shared.label}>Name</label>
+              <input className="field" name="name" placeholder="Full name" value={formData.name} onChange={onChange} required />
+            </div>
+            <div style={shared.group}>
+              <label style={shared.label}>Role</label>
+              <select className="field" name="role" value={formData.role} onChange={onChange}>
+                {WORKER_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div style={shared.formRow}>
+            <div style={shared.group}>
+              <label style={shared.label}>Phone</label>
+              <input className="field" name="phone" placeholder="Phone number" value={formData.phone} onChange={onChange} />
+            </div>
+            <div style={shared.group}>
+              <label style={shared.label}>Email</label>
+              <input className="field" name="email" type="email" placeholder="Email address" value={formData.email} onChange={onChange} />
+            </div>
+          </div>
+
+          <div style={shared.group}>
+            <label style={shared.label}>Crew</label>
+            <select className="field" name="crew_id" value={formData.crew_id} onChange={onChange}>
+              <option value="">— Unassigned —</option>
+              {crews.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+
+          <div style={shared.group}>
+            <label style={shared.label}>Notes</label>
+            <textarea className="field" name="notes" placeholder="Optional notes" value={formData.notes} onChange={onChange} rows={3} />
+          </div>
+
+          <div style={styles.inlineActions}>
+            <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
+            <button className="btn btn-primary" type="submit" disabled={saving}>
+              {saving && <Spinner />}
+              {saving ? 'Saving…' : 'Save changes'}
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   )
 }
@@ -217,9 +293,12 @@ const styles = {
   section: { marginBottom: '28px' },
   sectionTitle: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' },
   list: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  row: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', gap: '1rem', flexWrap: 'wrap' },
+  rowCard: { padding: 0, overflow: 'hidden' },
+  row: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', gap: '1rem', flexWrap: 'wrap', minHeight: '48px', cursor: 'pointer' },
   workerName: { fontWeight: 600, fontSize: '0.95rem', marginRight: '0.75rem', color: COLORS.textPrimary },
   workerRole: { fontFamily: FONT_MONO, fontSize: '0.65rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: COLORS.textSecondary, marginRight: '0.75rem' },
   workerContact: { fontFamily: FONT_MONO, fontSize: '0.72rem', color: COLORS.textMuted, marginRight: '0.75rem' },
-  actions: { display: 'flex', gap: '0.5rem', flexShrink: 0 },
+  actions: { display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 },
+  inlineForm: { borderTop: `1px solid ${COLORS.borderSubtle}`, padding: '20px 16px', cursor: 'default' },
+  inlineActions: { display: 'flex', justifyContent: 'flex-end', gap: '10px' },
 }

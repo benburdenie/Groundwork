@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin, getCompanyId } from '../../../lib/serverAuth'
+import { assertNoJobConflicts } from '../../../lib/conflictsServer'
 import {
   ApiError, handleError, readJson, cleanId, cleanDate, cleanText, assertDateOrder, assertRangeLength, LIMITS,
 } from '../../../lib/apiUtils'
@@ -50,6 +51,13 @@ export async function POST(request) {
       .from('jobs').select('id').eq('id', job_id).eq('company_id', companyId).eq('is_active', true).maybeSingle()
     if (jobError) throw jobError
     if (!job) throw new ApiError(404, 'Job not found')
+
+    // jobId: job_id excludes this same job's own bookings/job_equipment from the
+    // conflict search — booking equipment onto a job it's already on isn't a
+    // conflict with itself.
+    await assertNoJobConflicts(companyId, {
+      jobId: job_id, crewId: null, equipmentIds: [equipment_id], startDate: start_date, endDate: end_date,
+    })
 
     const { data, error } = await supabaseAdmin
       .from('equipment_bookings')

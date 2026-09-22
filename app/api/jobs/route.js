@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin, getCompanyId, allOwnedByCompany } from '../../../lib/serverAuth'
 import { computeEndDate, countWorkDays, MAX_DURATION_DAYS } from '../../../lib/workdays'
 import { fetchWorkScheduleMap } from '../../../lib/workSchedule'
+import { assertNoJobConflicts } from '../../../lib/conflictsServer'
 import {
   ApiError, handleError, readJson, cleanText, cleanEmail, cleanEnum, cleanDate, cleanId, cleanIdList,
   cleanDuration, assertDateOrder, JOB_STATUSES, LIMITS,
@@ -121,6 +122,11 @@ export async function POST(request) {
     const workSchedule = await fetchWorkScheduleMap(companyId)
     const resolved = resolveDatesAndDuration({ start_date, end_date, duration_days }, workSchedule)
 
+    await assertNoJobConflicts(companyId, {
+      jobId: null, crewId: crew_id || null, equipmentIds: equipment_ids || [],
+      startDate: resolved.start_date, endDate: resolved.end_date,
+    })
+
     const { data, error } = await supabaseAdmin
       .from('jobs')
       .insert({
@@ -162,7 +168,7 @@ export async function PATCH(request) {
 
     const { data: existing, error: existError } = await supabaseAdmin
       .from('jobs')
-      .select('start_date, end_date, duration_days')
+      .select('start_date, end_date, duration_days, crew_id')
       .eq('id', id)
       .eq('company_id', companyId)
       .maybeSingle()
@@ -176,6 +182,9 @@ export async function PATCH(request) {
       throw new ApiError(404, 'Equipment not found')
     }
 
+    let finalStart = existing.start_date
+    let finalEnd = existing.end_date
+
     if ('start_date' in update || 'end_date' in update || duration_days !== undefined) {
       const workSchedule = await fetchWorkScheduleMap(companyId)
       const start_date = 'start_date' in update ? (update.start_date || null) : existing.start_date
@@ -184,6 +193,30 @@ export async function PATCH(request) {
       update.start_date = resolved.start_date
       update.end_date = resolved.end_date
       update.duration_days = resolved.duration_days
+      finalStart = resolved.start_date
+      finalEnd = resolved.end_date
+    }
+
+    // Re-check conflicts whenever the crew, the equipment, or the dates change —
+    // a date move can put an unchanged crew/equipment into a new overlap just as
+    // easily as reassigning them can, so all three trigger the same gate against
+    // whatever the job's dates/crew/equipment will be *after* this write.
+    const crewChanging = 'crew_id' in update
+    const equipmentChanging = equipment_ids !== undefined
+    const datesChanging = finalStart !== existing.start_date || finalEnd !== existing.end_date
+    if (crewChanging || equipmentChanging || datesChanging) {
+      const effectiveCrewId = crewChanging ? update.crew_id : existing.crew_id
+      let effectiveEquipmentIds = equipment_ids
+      if (!equipmentChanging) {
+        const { data: existingEq, error: eqErr } = await supabaseAdmin
+          .from('job_equipment').select('equipment_id').eq('job_id', id).eq('company_id', companyId)
+        if (eqErr) throw eqErr
+        effectiveEquipmentIds = (existingEq || []).map(r => r.equipment_id)
+      }
+      await assertNoJobConflicts(companyId, {
+        jobId: id, crewId: effectiveCrewId || null, equipmentIds: effectiveEquipmentIds || [],
+        startDate: finalStart, endDate: finalEnd,
+      })
     }
 
     if (Object.keys(update).length > 0) {

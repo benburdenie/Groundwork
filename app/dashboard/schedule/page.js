@@ -12,7 +12,7 @@ import { Skeleton } from '../ui'
 import MonthView from './MonthView'
 import WeekView from './WeekView'
 import BoardView from './BoardView'
-import UnscheduledDropdown from './UnscheduledDropdown'
+import UnscheduledPanel from './UnscheduledPanel'
 import JobPanel from './JobPanel'
 import JobFormModal from './JobFormModal'
 import QuickCreatePopover from './QuickCreatePopover'
@@ -166,7 +166,8 @@ function ScheduleContent() {
     if (!job) return
     const duration = job.duration_days || 1
     const newEnd = computeEndDate(dateStr, duration, workSchedule)
-    await apiPatch('/api/jobs', { id: job.id, start_date: dateStr, end_date: newEnd, duration_days: duration })
+    const res = await apiPatch('/api/jobs', { id: job.id, start_date: dateStr, end_date: newEnd, duration_days: duration })
+    if (res.error) { setError(res.error); return }
     await refreshAll()
   }
 
@@ -190,7 +191,8 @@ function ScheduleContent() {
   }
 
   const handleDropCrewOnJob = async (jobId, crewId) => {
-    await apiPatch('/api/jobs', { id: jobId, crew_id: crewId })
+    const res = await apiPatch('/api/jobs', { id: jobId, crew_id: crewId })
+    if (res.error) { setError(res.error); return }
     await refreshAll()
   }
 
@@ -213,11 +215,12 @@ function ScheduleContent() {
   const handleEquipThisJob = async () => {
     if (!equipDropTarget) return
     setBusy(true)
-    await apiPost('/api/equipment-bookings', {
+    const res = await apiPost('/api/equipment-bookings', {
       equipment_id: equipDropTarget.equipmentId, job_id: equipDropTarget.job.id,
       start_date: equipDropTarget.job.start_date, end_date: equipDropTarget.job.end_date,
     })
     setBusy(false)
+    if (res.error) { setError(res.error); return }
     setEquipDropTarget(null)
     await refreshAll()
   }
@@ -225,11 +228,12 @@ function ScheduleContent() {
   const handleEquipPickDates = async (start, end) => {
     if (!equipDropTarget) return
     setBusy(true)
-    await apiPost('/api/equipment-bookings', {
+    const res = await apiPost('/api/equipment-bookings', {
       equipment_id: equipDropTarget.equipmentId, job_id: equipDropTarget.job.id,
       start_date: start, end_date: end,
     })
     setBusy(false)
+    if (res.error) { setError(res.error); return }
     setEquipDropTarget(null)
     await refreshAll()
   }
@@ -273,14 +277,6 @@ function ScheduleContent() {
               </button>
             ))}
           </div>
-          <UnscheduledDropdown
-            jobs={jobs}
-            draggingJobId={draggingJobId}
-            onJobDragStart={setDraggingJobId}
-            onJobDragEnd={() => setDraggingJobId(null)}
-            onDropUnschedule={handleDropUnschedule}
-            onJobClick={openJob}
-          />
           <button className="btn btn-secondary" onClick={() => setRainDayOpen(true)}><CloudRain size={15} />Rain day</button>
           <button className="btn btn-secondary" onClick={() => setWorkDayOpen(true)}><CalendarClock size={15} />Work day</button>
           <Link href="/dashboard/dispatch" target="_blank" className="btn btn-secondary"><Printer size={15} />Dispatch sheet</Link>
@@ -302,6 +298,16 @@ function ScheduleContent() {
       )}
 
       <div style={styles.main}>
+        {(view === 'month' || view === 'week') && (
+          <UnscheduledPanel
+            jobs={jobs}
+            draggingJobId={draggingJobId}
+            onJobDragStart={setDraggingJobId}
+            onJobDragEnd={() => setDraggingJobId(null)}
+            onDropUnschedule={handleDropUnschedule}
+            onJobClick={openJob}
+          />
+        )}
         {view === 'month' && (
           <MonthView
             cursor={cursor}
@@ -421,5 +427,5 @@ const styles = {
   monthToolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '0.75rem' },
   nav: { display: 'flex', alignItems: 'center', gap: '8px' },
   monthLabel: { fontFamily: FONT_COND, fontWeight: 800, fontSize: '1.4rem', letterSpacing: '1px', textTransform: 'uppercase', color: COLORS.textPrimary },
-  main: { flex: 1, minWidth: 0 },
+  main: { flex: 1, minWidth: 0, position: 'relative' },
 }
