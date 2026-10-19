@@ -8,7 +8,7 @@ sees which equipment is booked where, all from one dashboard.
 
 **Live app:** https://groundwork-rose-iota.vercel.app
 
-<!-- TODO: add a screenshot of the schedule view here, e.g. docs/schedule.png -->
+![Month view of the schedule](docs/schedule.png)
 
 ## Features
 
