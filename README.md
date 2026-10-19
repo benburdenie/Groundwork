@@ -7,6 +7,7 @@ A company schedules its crews, tracks each job from scheduled to complete and
 sees which equipment is booked where, all from one dashboard.
 
 **Live app:** https://groundwork-rose-iota.vercel.app
+(demo login: `demo@test.com` / `Demo123`)
 
 ![Month view of the schedule](docs/schedule.png)
 
@@ -68,8 +69,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-The migrations in `supabase/migrations/` add row-level security and later schema
-changes; the base tables are not yet checked in. Then:
+Apply the SQL files in `supabase/migrations/` in filename order (for example by
+pasting them into the Supabase SQL editor). `20260901000000_base_schema.sql` creates
+the tables, functions, triggers and original policies; the later files are safe to
+re-run. Then:
 
 ```bash
 npm run dev     # http://localhost:3000
